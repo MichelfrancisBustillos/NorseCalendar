@@ -1,3 +1,4 @@
-requests
-json
 datetime
+certifi
+urllib3
+tkinter
