@@ -223,7 +223,7 @@ def print_holidays(holidays):
     """ Generate Holiday summary string."""
     value = ""
     counter = 0
-    for each in holidays:
+    for _each in holidays:
         value = value + holidays[counter].print()
         counter = counter + 1
     return value
@@ -240,6 +240,28 @@ def submit(_event):
             holidays = calculate_dates(year)
             summary.insert(1.0, print_holidays(holidays))
             summary.config(state='disabled')
+            for each in holidays:
+                if each.end_date is not None:
+                    clean_end_date = each.end_date.strftime('%m-%d-%Y')
+                else:
+                    clean_end_date = ""
+                if each.description is not None:
+                    clean_description = each.description
+                else:
+                    clean_description = ""
+                if each.schedule is not None:
+                    clean_schedule = each.schedule
+                else:
+                    clean_schedule = ""
+
+                table.insert("",
+                             tk.END,
+                             text=each.name,
+                             values=(each.name,
+                                     each.start_date.strftime('%m-%d-%Y'),
+                                     clean_end_date,
+                                     clean_description,
+                                     clean_schedule))
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must between 1700 and 2100.")
         year_entry.delete(0,tk.END)
@@ -260,8 +282,28 @@ submit_button.pack()
 tab_control = ttk.Notebook(window)
 tab1 = ttk.Frame(tab_control)
 tab_control.add(tab1, text = 'Summary')
-tab_control.pack(expand=1, fill="both")
 summary = tk.Text(tab1, state='disabled')
 summary.pack(fill="both",expand=True)
+tab2 = ttk.Frame(tab_control)
+tab_control.add(tab2, text = "Table View")
+table = ttk.Treeview(tab2,
+                     columns=("Name",
+                              "Start",
+                              "End",
+                              "Description",
+                              "Schedule"),
+                     show='headings')
+table.heading("Name", text="Name")
+table.column("Name", minwidth=0, stretch=True)
+table.heading("Start", text="Start Date")
+table.column("Start", minwidth=0, stretch=True)
+table.heading("End", text="End Date")
+table.column("End", minwidth=0, stretch=True)
+table.heading("Description", text="Description")
+table.column("Description", minwidth=0, stretch=True)
+table.heading("Schedule", text="Schedule")
+table.column("Schedule", minwidth=0, stretch=True)
+table.pack(fill="both", expand=True)
+tab_control.pack(fill="both", expand=True)
 window.title("Norse Calendar Calculator")
 window.mainloop()
