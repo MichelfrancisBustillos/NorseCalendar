@@ -12,14 +12,14 @@ http = urllib3.PoolManager(
     ca_certs=certifi.where()
 )
 
-
 class Holiday():
     """ Class containing definition of 'Holiday' object."""
-    def __init__(self, name, start_date, end_date=None, desc=None):
+    def __init__(self, name, start_date, end_date=None, desc=None, schedule=None):
         self.name = name
         self.start_date = start_date
         self.end_date = end_date
         self.description = desc
+        self.schedule = schedule
 
     def print(self):
         """ Method to print holiday class contents."""
@@ -39,6 +39,9 @@ class Holiday():
         if self.description is not None:
             print("Description:", self.description)
             value = value + "Description: " + self.description + "\n"
+        if self.schedule is not None:
+            print("Schedule: ", self.schedule)
+            value = value + "Schedule: " + self.schedule + "\n"
         return value
 
 @dataclass
@@ -47,29 +50,30 @@ class MoonPhase():
     phase: str
     date: datetime
 
-def main(year):
-    """ Core Program Functions"""
+def calculate_dates(year):
+    """ Calculate Holiday dates and return array of class Holiday."""
+    holidays = []
     #Get Core Dates
     phenom_api = "https://aa.usno.navy.mil/api/seasons?year=" + str(year) + "&tz=-6&dst=true"
     phenoms = http.request("GET", phenom_api)
     phenoms_json = phenoms.json()
 
-    spring_equinox = Holiday(
+    holidays[0] = Holiday(
         "Spring Equinox",
         datetime.datetime(phenoms_json['data'][1]['year'],
                         phenoms_json['data'][1]['month'],
                         phenoms_json['data'][1]['day']))
-    summer_solstice = Holiday(
+    holidays[1] = Holiday(
         "Summar Solstice",
         datetime.datetime(phenoms_json['data'][2]['year'],
                         phenoms_json['data'][2]['month'],
                         phenoms_json['data'][2]['day']))
-    fall_equinox = Holiday(
+    holidays[2] = Holiday(
         "Fall Equinox",
         datetime.datetime(phenoms_json['data'][4]['year'],
                             phenoms_json['data'][4]['month'],
                             phenoms_json['data'][4]['day']))
-    winter_solstice = Holiday(
+    holidays[3] = Holiday(
         "Winter Solstice",
         datetime.datetime(phenoms_json['data'][5]['year'],
                         phenoms_json['data'][5]['month'],
@@ -117,83 +121,109 @@ def main(year):
             return next_full_moon(input_date)
 
     #Calculate Holidays
-    yule = Holiday(
+    holidays[4] = Holiday(
         "Yule",
-        winter_solstice.start_date,
-        winter_solstice.start_date + datetime.timedelta(days=12))
-    thorrablot = Holiday(
+        holidays[3].start_date,
+        holidays[3].start_date + datetime.timedelta(days=12),
+        None,
+        "Start: Winter Solstice, End: 12 days after the Winter Solstice.")
+    holidays[5] = Holiday(
         "Thorrablot",
-        next_full_moon(next_new_moon(winter_solstice.start_date)))
-    disting = Holiday(
+        next_full_moon(next_new_moon(holidays[3].start_date)),
+        None,
+        None,
+        "The full moon after the new moon following the Winter Solstice.")
+    holidays[6] = Holiday(
         "Disting",
-        next_full_moon(thorrablot.start_date))
-    midwinter = Holiday(
+        next_full_moon(holidays[5].start_date),
+        None,
+        None,
+        "The full moon after the Thorrablot.")
+    holidays[7] = Holiday(
         "Mid-Winter",
-        thorrablot.start_date,
-        next_new_moon(thorrablot.start_date))
-    lenzen = Holiday(
+        holidays[5].start_date,
+        next_new_moon(holidays[5].start_date),
+        None,
+        "Start: Thorrablot, End: Next New Moon")
+    holidays[8] = Holiday(
         "Lenzen",
-        previous_full_moon(spring_equinox.start_date),
-        next_full_moon(spring_equinox.start_date))
-    offering_to_freya = Holiday(
+        previous_full_moon(holidays[0].start_date),
+        next_full_moon(holidays[0].start_date),
+        None,
+        "Start: Full moon before the Spring Equinox, End: Full moon after the Spring Equinox")
+    holidays[9] = Holiday(
         "Offering to Freya",
-        spring_equinox.start_date)
-    ostara = Holiday(
+        holidays[0].start_date,
+        None,
+        None,
+        "The Spring Equinox")
+    holidays[10] = Holiday(
         "Ostara",
-        next_full_moon(spring_equinox.start_date))
-    sigrblot = Holiday(
+        next_full_moon(holidays[0].start_date),
+        None,
+        None,
+        "The full moon after the Spring Equinox.")
+    holidays[11] = Holiday(
         "Sigrblot",
-        next_new_moon(ostara.start_date))
-    summer_tides = Holiday(
+        next_new_moon(holidays[10].start_date),
+        None,
+        None,
+        "The new moon after Ostara.")
+    holidays[12] = Holiday(
         "Summer Nights Holy Tide",
-        ostara.start_date, sigrblot.start_date)
-    midsummer = Holiday(
+        holidays[10].start_date,
+        holidays[11].start_date,
+        None,
+        "Start: Ostara, End: Sigrblot")
+    holidays[13] = Holiday(
         "Mid-Summer",
-        summer_solstice.start_date)
-    lammas = Holiday(
+        holidays[1].start_date,
+        None,
+        None,
+        "The Summer Solstice")
+    holidays[14] = Holiday(
         "Lammas",
-        closest_full_moon(fall_equinox.start_date))
-    hausblot = Holiday(
+        closest_full_moon(holidays[2].start_date),
+        None,
+        None,
+        "The full moon closest to the Fall Equinox.")
+    holidays[15] = Holiday(
         "Hausblot",
-        next_new_moon(lammas.start_date))
-    harvest_tides = Holiday(
+        next_new_moon(holidays[14].start_date),
+        None,
+        None,
+        "The new moon after Lammas.")
+    holidays[16] = Holiday(
         "Harvest Home Holy Tide",
-        lammas.start_date, hausblot.start_date)
-    alfablot = Holiday(
+        holidays[14].start_date,
+        holidays[15].start_date,
+        None,
+        "Start: Lammas, End: Hausblot")
+    holidays[17] = Holiday(
         "Alfablot",
-        next_full_moon(next_full_moon(fall_equinox.start_date)))
-    disablot = Holiday(
+        next_full_moon(next_full_moon(holidays[2].start_date)),
+        None,
+        None,
+        "The two full moons after the fall Equinox.")
+    holidays[18] = Holiday(
         "Disablot",
-        next_new_moon(alfablot.start_date))
-    winters_tides = Holiday(
+        next_new_moon(holidays[17].start_date),
+        None,
+        None,
+        "The new moon after the Alfablot.")
+    holidays[19] = Holiday(
         "Winters Nights Holy Tide",
-        alfablot.start_date,
-        disablot.start_date)
+        holidays[17].start_date,
+        holidays[18].start_date,
+        None,
+        "Start: Alfablot, End: Disblot")
+    return holidays
 
-    #Output Holidays
-    date_list = (spring_equinox.print()+
-                 summer_solstice.print()+
-                 fall_equinox.print()+
-                 winter_solstice.print()+
-                 yule.print()+
-                 thorrablot.print()+
-                 disting.print()+
-                 midwinter.print()+
-                 lenzen.print()+
-                 offering_to_freya.print()+
-                 ostara.print()+
-                 sigrblot.print()+
-                 summer_tides.print()+
-                 midsummer.print()+
-                 lammas.print()+
-                 hausblot.print()+
-                 harvest_tides.print()+
-                 alfablot.print()+
-                 disablot.print()+
-                 winters_tides.print())
-
-    return date_list
-
+def print_holidays(holidays):
+    """ Generate Holiday summary string."""
+    for x in holidays:
+        value = value + holidays[x].print()
+    return value
 #GUI
 def submit(_event):
     """ Handle GUI Click Event."""
@@ -204,7 +234,8 @@ def submit(_event):
         else:
             print(year)
             summary.config(state='normal')
-            summary.insert(1.0, main(year))
+            holidays = calculate_dates(year)
+            summary.insert(1.0, print_holidays(holidays))
             summary.config(state='disabled')
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must between 1700 and 2100.")
