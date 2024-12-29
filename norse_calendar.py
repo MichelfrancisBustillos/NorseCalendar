@@ -3,6 +3,7 @@ import datetime
 from dataclasses import dataclass
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
 import certifi
 import urllib3
 
@@ -202,13 +203,16 @@ def submit(_event):
             raise ValueError("Year must be a number between 1700 and 2100")
         else:
             print(year)
-            content["text"] = main(year)
+            summary.config(state='normal')
+            summary.insert(1.0, main(year))
+            summary.config(state='disabled')
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must between 1700 and 2100.")
         year_entry.delete(0,tk.END)
     return "break"
 
 window = tk.Tk()
+window.state('zoomed')
 header = tk.Label(text="Norse Calendar Calculator",font=("Arial", 25))
 header.pack()
 instructions = tk.Label(text="Enter a year between 1700 and 2100:")
@@ -219,7 +223,11 @@ submit_button = tk.Button(text="Submit")
 submit_button.bind("<Button-1>", submit)
 window.bind('<Return>', submit)
 submit_button.pack()
-content = tk.Label()
-content.pack()
+tab_control = ttk.Notebook(window)
+tab1 = ttk.Frame(tab_control)
+tab_control.add(tab1, text = 'Summary')
+tab_control.pack(expand=1, fill="both")
+summary = tk.Text(tab1, state='disabled')
+summary.pack(fill="both",expand=True)
 window.title("Norse Calendar Calculator")
 window.mainloop()
