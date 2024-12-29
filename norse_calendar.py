@@ -52,7 +52,7 @@ class MoonPhase():
 
 def calculate_dates(year):
     """ Calculate Holiday dates and return array of class Holiday."""
-    holidays = []
+    holidays = [None] * 20
     #Get Core Dates
     phenom_api = "https://aa.usno.navy.mil/api/seasons?year=" + str(year) + "&tz=-6&dst=true"
     phenoms = http.request("GET", phenom_api)
@@ -221,8 +221,11 @@ def calculate_dates(year):
 
 def print_holidays(holidays):
     """ Generate Holiday summary string."""
-    for x in holidays:
-        value = value + holidays[x].print()
+    value = ""
+    counter = 0
+    for each in holidays:
+        value = value + holidays[counter].print()
+        counter = counter + 1
     return value
 #GUI
 def submit(_event):
