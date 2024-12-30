@@ -238,8 +238,10 @@ def submit(_event):
             print(year)
             summary.config(state='normal')
             holidays = calculate_dates(year)
+            summary.delete(1.0, tk.END)
             summary.insert(1.0, print_holidays(holidays))
             summary.config(state='disabled')
+            table.delete(*table.get_children())
             for each in holidays:
                 if each.end_date is not None:
                     clean_end_date = each.end_date.strftime('%m-%d-%Y')
