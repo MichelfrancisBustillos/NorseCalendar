@@ -230,7 +230,7 @@ def print_holidays(holidays):
 
 def generate_ics():
     """ Generate ICS file for Calendar Import"""
-    filename = tk.filedialog.asksaveasfilename(
+    filename = filedialog.asksaveasfilename(
         title='Save as...',
         filetypes=[('Calendar files', '*.ics')],
         defaultextension='.ics'
