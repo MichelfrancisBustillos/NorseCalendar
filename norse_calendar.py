@@ -380,9 +380,16 @@ def clear():
     year_entry.delete(0, tk.END)
     generate_button.config(state='disabled')
 
+# Declare global variables at the module level
+window: tk.Tk
+year_entry: tk.Entry
+summary: tk.Text
+table: ttk.Treeview
+generate_button: tk.Button
+
 def setup_gui():
     """ Setup the GUI components. """
-    global window, year_entry, summary, table, generate_button
+    global window, year_entry, summary, table, generate_button # pylint: disable=global-statement
     window = tk.Tk()
     window.state('zoomed')
     window.title("Norse Calendar Calculator")
