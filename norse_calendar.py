@@ -64,7 +64,7 @@ def calculate_dates(year):
                         phenoms_json['data'][1]['month'],
                         phenoms_json['data'][1]['day']))
     holidays[1] = Holiday(
-        "Summar Solstice",
+        "Summer Solstice",
         datetime.datetime(phenoms_json['data'][2]['year'],
                         phenoms_json['data'][2]['month'],
                         phenoms_json['data'][2]['day']))
@@ -123,100 +123,145 @@ def calculate_dates(year):
     #Calculate Holidays
     holidays[4] = Holiday(
         "Yule",
-        holidays[3].start_date,
-        holidays[3].start_date + datetime.timedelta(days=12),
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Winter Solstice')
+        ].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Winter Solstice')
+        ].start_date + datetime.timedelta(days=12),
         None,
         "Start: Winter Solstice, End: 12 days after the Winter Solstice.")
     holidays[5] = Holiday(
         "Thorrablot",
-        next_full_moon(next_new_moon(holidays[3].start_date)),
+        next_full_moon(next_new_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Winter Solstice')
+        ].start_date)),
         None,
         None,
         "The full moon after the new moon following the Winter Solstice.")
     holidays[6] = Holiday(
         "Disting",
-        next_full_moon(holidays[5].start_date),
+        next_full_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Thorrablot')
+        ].start_date),
         None,
         None,
         "The full moon after the Thorrablot.")
     holidays[7] = Holiday(
         "Mid-Winter",
-        holidays[5].start_date,
-        next_new_moon(holidays[5].start_date),
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Thorrablot')
+        ].start_date,
+        next_new_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Thorrablot')
+        ].start_date),
         None,
         "Start: Thorrablot, End: Next New Moon")
     holidays[8] = Holiday(
         "Lenzen",
-        previous_full_moon(holidays[0].start_date),
-        next_full_moon(holidays[0].start_date),
+        previous_full_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
+        ].start_date),
+        next_full_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
+        ].start_date),
         None,
         "Start: Full moon before the Spring Equinox, End: Full moon after the Spring Equinox")
     holidays[9] = Holiday(
         "Offering to Freya",
-        holidays[0].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
+        ].start_date,
         None,
         None,
         "The Spring Equinox")
     holidays[10] = Holiday(
         "Ostara",
-        next_full_moon(holidays[0].start_date),
+        next_full_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
+        ].start_date),
         None,
         None,
         "The full moon after the Spring Equinox.")
     holidays[11] = Holiday(
         "Sigrblot",
-        next_new_moon(holidays[10].start_date),
+        next_new_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Ostara')
+        ].start_date),
         None,
         None,
         "The new moon after Ostara.")
     holidays[12] = Holiday(
         "Summer Nights Holy Tide",
-        holidays[10].start_date,
-        holidays[11].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Ostara')
+        ].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Sigrblot')
+        ].start_date,
         None,
         "Start: Ostara, End: Sigrblot")
     holidays[13] = Holiday(
         "Mid-Summer",
-        holidays[1].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Summer Solstice')
+        ].start_date,
         None,
         None,
         "The Summer Solstice")
     holidays[14] = Holiday(
         "Lammas",
-        closest_full_moon(holidays[2].start_date),
+        closest_full_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Fall Equinox')
+        ].start_date),
         None,
         None,
         "The full moon closest to the Fall Equinox.")
     holidays[15] = Holiday(
         "Hausblot",
-        next_new_moon(holidays[14].start_date),
+        next_new_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Lammas')
+        ].start_date),
         None,
         None,
         "The new moon after Lammas.")
     holidays[16] = Holiday(
         "Harvest Home Holy Tide",
-        holidays[14].start_date,
-        holidays[15].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Lammas')
+        ].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Hausblot')
+        ].start_date,
         None,
         "Start: Lammas, End: Hausblot")
     holidays[17] = Holiday(
         "Alfablot",
-        next_full_moon(next_full_moon(holidays[2].start_date)),
+        next_full_moon(next_full_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Fall Equinox')
+        ].start_date)),
         None,
         None,
-        "The two full moons after the fall Equinox.")
+        "The two full moons after the Fall Equinox.")
     holidays[18] = Holiday(
         "Disablot",
-        next_new_moon(holidays[17].start_date),
+        next_new_moon(holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Alfablot')
+        ].start_date),
         None,
         None,
         "The new moon after the Alfablot.")
     holidays[19] = Holiday(
         "Winters Nights Holy Tide",
-        holidays[17].start_date,
-        holidays[18].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Alfablot')
+        ].start_date,
+        holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Disablot')
+        ].start_date,
         None,
-        "Start: Alfablot, End: Disblot")
+        "Start: Alfablot, End: Disablot")
+    holidays = sorted(holidays, key=lambda holiday:holiday.start_date)
     return holidays
 
 def print_holidays(holidays):
@@ -299,6 +344,7 @@ def clear():
     summary.delete(1.0, tk.END)
     summary.config(state='disabled')
     table.delete(*table.get_children())
+    year_entry.delete(0,tk.END)
     generate_button.config(state='disabled')
 
 window = tk.Tk()
