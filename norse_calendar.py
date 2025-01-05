@@ -1,12 +1,15 @@
-""" Import Modules"""
+""" Import Modules """
 import datetime
 from dataclasses import dataclass
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
+from typing import List, Optional
 import certifi
 import urllib3
 from ics import Calendar, Event
 
+
+# Initialize HTTP Pool Manager
 http = urllib3.PoolManager(
     cert_reqs="CERT_REQUIRED",
     ca_certs=certifi.where()
@@ -14,74 +17,79 @@ http = urllib3.PoolManager(
 
 class Holiday():
     """ Class containing definition of 'Holiday' object."""
-    def __init__(self, name, start_date, end_date=None, desc=None, schedule=None):
+    def __init__(self,
+                 name: str, start_date: datetime.datetime,
+                 end_date: Optional[datetime.datetime]=None,
+                 desc: Optional[str]=None,
+                 schedule: Optional[str]=None):
         self.name = name
         self.start_date = start_date
         self.end_date = end_date
         self.description = desc
         self.schedule = schedule
 
-    def print(self):
-        """ Method to print holiday class contents."""
-        value = "Name: " + self.name + "\n"
+    def print(self) -> str:
+        """ Method to print holiday class contents. """
+        value = f"Name: {self.name}\n"
         print("Name:", self.name)
         if self.start_date is None:
             print("Date: Missing")
-            value = value + "Date: Missing\n"
+            value += "Date: Missing\n"
         elif self.end_date is None:
             print("Date:", self.start_date.strftime('%m-%d-%Y'))
-            value = value + "Date: " + self.start_date.strftime('%m-%d-%Y') + "\n"
+            value += f"Date: {self.start_date.strftime('%m-%d-%Y')}\n"
         else:
             print("Start Date:", self.start_date.strftime('%m-%d-%Y'))
-            value = value + "Start Date: " + self.start_date.strftime('%m-%d-%Y') + "\n"
+            value += f"Start Date: {self.start_date.strftime('%m-%d-%Y')}\n"
             print("End Date:", self.end_date.strftime('%m-%d-%Y'))
-            value = value + "End Date: " + self.end_date.strftime('%m-%d-%Y') + "\n"
+            value += f"End Date: {self.end_date.strftime('%m-%d-%Y')}\n"
         if self.description is not None:
             print("Description:", self.description)
-            value = value + "Description: " + self.description + "\n"
+            value += f"Description: {self.description}\n"
         if self.schedule is not None:
             print("Schedule: ", self.schedule)
-            value = value + "Schedule: " + self.schedule + "\n"
+            value += f"Schedule: {self.schedule}\n"
         return value
 
 @dataclass
-class MoonPhase():
-    """ Class defining moonphase."""
+class MoonPhase:
+    """ Class defining moon phase. """
     phase: str
-    date: datetime
+    date: datetime.datetime
 
-def calculate_dates(year):
-    """ Calculate Holiday dates and return array of class Holiday."""
+def calculate_dates(year: int) -> List[Holiday]:
+    """ Calculate Holiday dates and return array of class Holiday. """
     holidays = [None] * 20
-    #Get Core Dates
-    phenom_api = "https://aa.usno.navy.mil/api/seasons?year=" + str(year) + "&tz=-6&dst=true"
+
+    # Get Core Dates
+    phenom_api = f"https://aa.usno.navy.mil/api/seasons?year={year}&tz=-6&dst=true"
     phenoms = http.request("GET", phenom_api)
     phenoms_json = phenoms.json()
 
     holidays[0] = Holiday(
         "Spring Equinox",
         datetime.datetime(phenoms_json['data'][1]['year'],
-                        phenoms_json['data'][1]['month'],
-                        phenoms_json['data'][1]['day']))
+                          phenoms_json['data'][1]['month'],
+                          phenoms_json['data'][1]['day']))
     holidays[1] = Holiday(
         "Summer Solstice",
         datetime.datetime(phenoms_json['data'][2]['year'],
-                        phenoms_json['data'][2]['month'],
-                        phenoms_json['data'][2]['day']))
+                          phenoms_json['data'][2]['month'],
+                          phenoms_json['data'][2]['day']))
     holidays[2] = Holiday(
         "Fall Equinox",
         datetime.datetime(phenoms_json['data'][4]['year'],
-                            phenoms_json['data'][4]['month'],
-                            phenoms_json['data'][4]['day']))
+                          phenoms_json['data'][4]['month'],
+                          phenoms_json['data'][4]['day']))
     holidays[3] = Holiday(
         "Winter Solstice",
         datetime.datetime(phenoms_json['data'][5]['year'],
-                        phenoms_json['data'][5]['month'],
-                        phenoms_json['data'][5]['day']))
+                          phenoms_json['data'][5]['month'],
+                          phenoms_json['data'][5]['day']))
 
-    start_day = datetime.date(int(year), 1, 1)
+    start_day = datetime.date(year, 1, 1)
     print("Start Day:", start_day.strftime('%m-%d-%Y'))
-    moon_api = "https://aa.usno.navy.mil/api/moon/phases/date?date=" + str(start_day) + "&nump=99"
+    moon_api = f"https://aa.usno.navy.mil/api/moon/phases/date?date={start_day}&nump=99"
     moons = http.request("GET", moon_api)
     moons_json = moons.json()
     all_moons = []
@@ -93,26 +101,28 @@ def calculate_dates(year):
             moons_json['phasedata'][moon]['day'])
         all_moons.append(MoonPhase(phase=phase,date=date))
 
-    def next_new_moon(input_date):
+    def next_new_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
         """ Get Next New Moon Date."""
         for moon_counter in all_moons:
             if moon_counter.date > input_date and moon_counter.phase == "New Moon":
                 return moon_counter.date
 
-    def next_full_moon(input_date):
+    def next_full_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
         """ Get Next Full Moon Date."""
         for moon_counter in all_moons:
             if moon_counter.date > input_date and moon_counter.phase == "Full Moon":
                 return moon_counter.date
+        return None
 
-    def previous_full_moon(input_date):
+    def previous_full_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
         """ Get Previous Full Moon Date."""
         for moon_counter in reversed(all_moons):
             if moon_counter.date < input_date and moon_counter.phase == "Full Moon":
                 return moon_counter.date
+        return None
 
-    def closest_full_moon(input_date):
-        """ Get Closest Full Moon Date."""
+    def closest_full_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
+        """ Get Closest Full Moon Date. """
         days_before = input_date - previous_full_moon(input_date)
         days_after = next_full_moon(input_date) - input_date
         if days_before < days_after:
@@ -120,12 +130,13 @@ def calculate_dates(year):
         else:
             return next_full_moon(input_date)
 
-    def previous_thursday(input_date):
+    def previous_thursday(input_date: datetime.datetime) -> datetime.datetime:
+        """ Get Previous Thursday Date. """
         while input_date.weekday() != 3:
-            input_date = input_date - datetime.timedelta(days=1)
+            input_date -= datetime.timedelta(days=1)
         return input_date
 
-    #Calculate Holidays
+    # Calculate Holidays
     holidays[4] = Holiday(
         "Yule",
         holidays[
@@ -135,7 +146,8 @@ def calculate_dates(year):
             next(i for i, x in enumerate(holidays) if x.name == 'Winter Solstice')
         ].start_date + datetime.timedelta(days=12),
         None,
-        "Start: Winter Solstice, End: 12 days after the Winter Solstice.")
+        "Start: Winter Solstice, End: 12 days after the Winter Solstice."
+    )
     holidays[5] = Holiday(
         "Thorrablot",
         next_full_moon(next_new_moon(holidays[
@@ -143,7 +155,8 @@ def calculate_dates(year):
         ].start_date)),
         None,
         None,
-        "The full moon after the new moon following the Winter Solstice.")
+        "The full moon after the new moon following the Winter Solstice."
+    )
     holidays[6] = Holiday(
         "Disting",
         next_full_moon(holidays[
@@ -151,7 +164,8 @@ def calculate_dates(year):
         ].start_date),
         None,
         None,
-        "The full moon after the Thorrablot.")
+        "The full moon after the Thorrablot."
+    )
     holidays[7] = Holiday(
         "Mid-Winter",
         holidays[
@@ -161,7 +175,8 @@ def calculate_dates(year):
             next(i for i, x in enumerate(holidays) if x.name == 'Thorrablot')
         ].start_date),
         None,
-        "Start: Thorrablot, End: Next New Moon")
+        "Start: Thorrablot, End: Next New Moon"
+    )
     holidays[8] = Holiday(
         "Lenzen",
         previous_full_moon(holidays[
@@ -171,7 +186,8 @@ def calculate_dates(year):
             next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
         ].start_date),
         None,
-        "Start: Full moon before the Spring Equinox, End: Full moon after the Spring Equinox")
+        "Start: Full moon before the Spring Equinox, End: Full moon after the Spring Equinox"
+    )
     holidays[9] = Holiday(
         "Offering to Freya",
         holidays[
@@ -179,7 +195,8 @@ def calculate_dates(year):
         ].start_date,
         None,
         None,
-        "The Spring Equinox")
+        "The Spring Equinox"
+    )
     holidays[10] = Holiday(
         "Ostara",
         next_full_moon(holidays[
@@ -187,7 +204,8 @@ def calculate_dates(year):
         ].start_date),
         None,
         None,
-        "The full moon after the Spring Equinox.")
+        "The full moon after the Spring Equinox."
+    )
     holidays[11] = Holiday(
         "Sigrblot",
         next_new_moon(holidays[
@@ -195,7 +213,8 @@ def calculate_dates(year):
         ].start_date),
         None,
         None,
-        "The new moon after Ostara.")
+        "The new moon after Ostara."
+    )
     holidays[12] = Holiday(
         "Summer Nights Holy Tide",
         holidays[
@@ -205,7 +224,8 @@ def calculate_dates(year):
             next(i for i, x in enumerate(holidays) if x.name == 'Sigrblot')
         ].start_date,
         None,
-        "Start: Ostara, End: Sigrblot")
+        "Start: Ostara, End: Sigrblot"
+    )
     holidays[13] = Holiday(
         "Mid-Summer",
         holidays[
@@ -213,7 +233,8 @@ def calculate_dates(year):
         ].start_date,
         None,
         None,
-        "The Summer Solstice")
+        "The Summer Solstice"
+    )
     holidays[14] = Holiday(
         "Lammas",
         closest_full_moon(holidays[
@@ -221,7 +242,8 @@ def calculate_dates(year):
         ].start_date),
         None,
         None,
-        "The full moon closest to the Fall Equinox.")
+        "The full moon closest to the Fall Equinox."
+    )
     holidays[15] = Holiday(
         "Hausblot",
         next_new_moon(holidays[
@@ -229,7 +251,8 @@ def calculate_dates(year):
         ].start_date),
         None,
         None,
-        "The new moon after Lammas.")
+        "The new moon after Lammas."
+    )
     holidays[16] = Holiday(
         "Harvest Home Holy Tide",
         holidays[
@@ -239,7 +262,8 @@ def calculate_dates(year):
             next(i for i, x in enumerate(holidays) if x.name == 'Hausblot')
         ].start_date,
         None,
-        "Start: Lammas, End: Hausblot")
+        "Start: Lammas, End: Hausblot"
+    )
     holidays[17] = Holiday(
         "Alfablot",
         next_full_moon(next_full_moon(holidays[
@@ -247,7 +271,8 @@ def calculate_dates(year):
         ].start_date)),
         None,
         None,
-        "The two full moons after the Fall Equinox.")
+        "The two full moons after the Fall Equinox."
+    )
     holidays[18] = Holiday(
         "Disablot",
         next_new_moon(holidays[
@@ -255,7 +280,8 @@ def calculate_dates(year):
         ].start_date),
         None,
         None,
-        "The new moon after the Alfablot.")
+        "The new moon after the Alfablot."
+    )
     holidays[19] = Holiday(
         "Winters Nights Holy Tide",
         holidays[
@@ -265,7 +291,8 @@ def calculate_dates(year):
             next(i for i, x in enumerate(holidays) if x.name == 'Disablot')
         ].start_date,
         None,
-        "Start: Alfablot, End: Disablot")
+        "Start: Alfablot, End: Disablot"
+    )
 
     for each in range(6):
         sunwait = Holiday(
@@ -279,20 +306,18 @@ def calculate_dates(year):
         )
         holidays.append(sunwait)
 
-    holidays = sorted(holidays, key=lambda holiday:holiday.start_date)
+    holidays = sorted(holidays, key=lambda holiday: holiday.start_date)
     return holidays
 
-def print_holidays(holidays):
-    """ Generate Holiday summary string."""
+def print_holidays(holidays: List[Holiday]) -> str:
+    """ Generate Holiday summary string. """
     value = ""
-    counter = 0
-    for _each in holidays:
-        value = value + holidays[counter].print()
-        counter = counter + 1
+    for holiday in holidays:
+        value += holiday.print()
     return value
 
 def generate_ics():
-    """ Generate ICS file for Calendar Import"""
+    """ Generate ICS file for Calendar Import """
     filename = filedialog.asksaveasfilename(
         title='Save as...',
         filetypes=[('Calendar files', '*.ics')],
@@ -301,22 +326,21 @@ def generate_ics():
     year = int(year_entry.get())
     holidays = calculate_dates(year)
     calendar = Calendar()
-    for each in holidays:
+    for holiday in holidays:
         event = Event()
-        event.name = each.name
-        event.begin = each.start_date
-        event.description = "Description: " + str(each.description)
-        event.description = event.description + "\nSchedule: " + str(each.schedule)
-        if each.end_date is not None:
-            event.end = each.end_date
+        event.name = holiday.name
+        event.begin = holiday.start_date
+        event.description = f"Description: {holiday.description}\nSchedule: {holiday.schedule}"
+        if holiday.end_date is not None:
+            event.end = holiday.end_date
         event.make_all_day()
         calendar.events.add(event)
     with open(filename, 'w', encoding="utf-8") as norse_calendar:
         norse_calendar.writelines(calendar.serialize_iter())
     messagebox.showinfo("ICS Created", "ICS File Created")
 
-def submit(_event):
-    """ Handle GUI Click Event."""
+def submit(_event=None):
+    """ Handle GUI Click Event. """
     try:
         year = int(year_entry.get())
         if year < 1700 or year > 2100:
@@ -327,88 +351,85 @@ def submit(_event):
             holidays = calculate_dates(year)
             summary.insert(1.0, print_holidays(holidays))
             summary.config(state='disabled')
-            for each in holidays:
-                if each.end_date is not None:
-                    clean_end_date = each.end_date.strftime('%m-%d-%Y')
-                else:
-                    clean_end_date = ""
-                if each.description is not None:
-                    clean_description = each.description
-                else:
-                    clean_description = ""
-                if each.schedule is not None:
-                    clean_schedule = each.schedule
-                else:
-                    clean_schedule = ""
+            for holiday in holidays:
+                clean_end_date = holiday.end_date.strftime('%m-%d-%Y') if holiday.end_date else ""
+                clean_description = holiday.description if holiday.description else ""
+                clean_schedule = holiday.schedule if holiday.schedule else ""
 
                 table.insert("",
                              tk.END,
-                             text=each.name,
-                             values=(each.name,
-                                     each.start_date.strftime('%m-%d-%Y'),
+                             text=holiday.name,
+                             values=(holiday.name,
+                                     holiday.start_date.strftime('%m-%d-%Y'),
                                      clean_end_date,
                                      clean_description,
                                      clean_schedule))
             generate_button.config(state='normal')
     except ValueError:
-        messagebox.showerror("Invalid Input", "Year must between 1700 and 2100.")
-        year_entry.delete(0,tk.END)
+        messagebox.showerror("Invalid Input", "Year must be between 1700 and 2100.")
+        year_entry.delete(0, tk.END)
     return "break"
 
 def clear():
-    """Clear summary and table views."""
+    """ Clear summary and table views. """
     print("Clearing")
     summary.config(state='normal')
     summary.delete(1.0, tk.END)
     summary.config(state='disabled')
     table.delete(*table.get_children())
-    year_entry.delete(0,tk.END)
+    year_entry.delete(0, tk.END)
     generate_button.config(state='disabled')
 
-window = tk.Tk()
-window.state('zoomed')
-window.title("Norse Calendar Calculator")
-header = tk.Label(text="Norse Calendar Calculator",font=("Arial", 25))
-header.pack()
-instructions = tk.Label(text="Enter a year between 1700 and 2100:")
-instructions.pack()
-year_entry = tk.Entry(width=50)
-year_entry.pack()
-buttons = ttk.Frame(window)
-submit_button = tk.Button(buttons, text="Submit", command=submit)
-submit_button.bind("<Button-1>", submit)
-clear_button = tk.Button(buttons, text="Clear", command=clear)
-window.bind('<Return>', submit)
-buttons.pack()
-submit_button.pack(side=tk.LEFT)
-clear_button.pack()
-tab_control = ttk.Notebook(window)
-tab1 = ttk.Frame(tab_control)
-tab_control.add(tab1, text = 'Summary')
-summary = tk.Text(tab1, state='disabled')
-summary.pack(fill="both",expand=True)
-tab2 = ttk.Frame(tab_control)
-tab_control.add(tab2, text = "Table View")
-table = ttk.Treeview(tab2,
-                     columns=("Name",
-                              "Start",
-                              "End",
-                              "Description",
-                              "Schedule"),
-                     show='headings')
-table.heading("Name", text="Name")
-table.column("Name", minwidth=0, stretch=True)
-table.heading("Start", text="Start Date")
-table.column("Start", minwidth=0, stretch=True)
-table.heading("End", text="End Date")
-table.column("End", minwidth=0, stretch=True)
-table.heading("Description", text="Description")
-table.column("Description", minwidth=0, stretch=True)
-table.heading("Schedule", text="Schedule")
-table.column("Schedule", minwidth=0, stretch=True)
-table.pack(fill="both", expand=True)
-tab_control.pack(fill="both", expand=True)
-generate_button = tk.Button(text="Generate ICS", command=generate_ics)
-generate_button.config(state='disabled')
-generate_button.pack()
-window.mainloop()
+def setup_gui():
+    """ Setup the GUI components. """
+    global window, year_entry, summary, table, generate_button
+    window = tk.Tk()
+    window.state('zoomed')
+    window.title("Norse Calendar Calculator")
+    header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
+    header.pack()
+    instructions = tk.Label(text="Enter a year between 1700 and 2100:")
+    instructions.pack()
+    year_entry = tk.Entry(width=50)
+    year_entry.pack()
+    buttons = ttk.Frame(window)
+    submit_button = tk.Button(buttons, text="Submit", command=submit)
+    submit_button.bind("<Button-1>", submit)
+    clear_button = tk.Button(buttons, text="Clear", command=clear)
+    window.bind('<Return>', submit)
+    buttons.pack()
+    submit_button.pack(side=tk.LEFT)
+    clear_button.pack()
+    tab_control = ttk.Notebook(window)
+    tab1 = ttk.Frame(tab_control)
+    tab_control.add(tab1, text='Summary')
+    summary = tk.Text(tab1, state='disabled')
+    summary.pack(fill="both", expand=True)
+    tab2 = ttk.Frame(tab_control)
+    tab_control.add(tab2, text="Table View")
+    table = ttk.Treeview(tab2,
+                        columns=("Name",
+                                "Start",
+                                "End",
+                                "Description",
+                                "Schedule"),
+                        show='headings')
+    table.heading("Name", text="Name")
+    table.column("Name", minwidth=0, stretch=True)
+    table.heading("Start", text="Start Date")
+    table.column("Start", minwidth=0, stretch=True)
+    table.heading("End", text="End Date")
+    table.column("End", minwidth=0, stretch=True)
+    table.heading("Description", text="Description")
+    table.column("Description", minwidth=0, stretch=True)
+    table.heading("Schedule", text="Schedule")
+    table.column("Schedule", minwidth=0, stretch=True)
+    table.pack(fill="both", expand=True)
+    tab_control.pack(fill="both", expand=True)
+    generate_button = tk.Button(text="Generate ICS", command=generate_ics)
+    generate_button.config(state='disabled')
+    generate_button.pack()
+    window.mainloop()
+
+if __name__ == '__main__':
+    setup_gui()
