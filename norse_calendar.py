@@ -106,6 +106,7 @@ def calculate_dates(year: int) -> List[Holiday]:
         for moon_counter in all_moons:
             if moon_counter.date > input_date and moon_counter.phase == "New Moon":
                 return moon_counter.date
+        return None
 
     def next_full_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
         """ Get Next Full Moon Date."""
