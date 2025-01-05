@@ -120,6 +120,11 @@ def calculate_dates(year):
         else:
             return next_full_moon(input_date)
 
+    def previous_thursday(input_date):
+        while input_date.weekday() != 3:
+            input_date = input_date - datetime.timedelta(days=1)
+        return input_date
+
     #Calculate Holidays
     holidays[4] = Holiday(
         "Yule",
@@ -261,6 +266,19 @@ def calculate_dates(year):
         ].start_date,
         None,
         "Start: Alfablot, End: Disablot")
+
+    for each in range(6):
+        sunwait = Holiday(
+            "Sunwait",
+            previous_thursday(holidays[
+                next(i for i, x in enumerate(holidays) if x.name == 'Winter Solstice')
+            ].start_date) - datetime.timedelta(days=each*7),
+            None,
+            None,
+            "Start: 6th Thursday before Winter Solstice, End: Thursday before Winter Solstice"
+        )
+        holidays.append(sunwait)
+
     holidays = sorted(holidays, key=lambda holiday:holiday.start_date)
     return holidays
 

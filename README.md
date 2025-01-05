@@ -2,4 +2,4 @@
 
 ## ToDo
 
-- Add Yule and Sunwait sub-days
+- Add Yule sub-days
