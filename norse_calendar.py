@@ -2,10 +2,10 @@
 import datetime
 from dataclasses import dataclass
 import tkinter as tk
-from tkinter import messagebox
-from tkinter import ttk
+from tkinter import messagebox, filedialog, ttk
 import certifi
 import urllib3
+from ics import Calendar, Event
 
 http = urllib3.PoolManager(
     cert_reqs="CERT_REQUIRED",
@@ -227,7 +227,31 @@ def print_holidays(holidays):
         value = value + holidays[counter].print()
         counter = counter + 1
     return value
-#GUI
+
+def generate_ics():
+    """ Generate ICS file for Calendar Import"""
+    filename = tk.filedialog.asksaveasfilename(
+        title='Save as...',
+        filetypes=[('Calendar files', '*.ics')],
+        defaultextension='.ics'
+    )
+    year = int(year_entry.get())
+    holidays = calculate_dates(year)
+    calendar = Calendar()
+    for each in holidays:
+        event = Event()
+        event.name = each.name
+        event.begin = each.start_date
+        event.description = "Description: " + str(each.description)
+        event.description = event.description + "\nSchedule: " + str(each.schedule)
+        if each.end_date is not None:
+            event.end = each.end_date
+        event.make_all_day()
+        calendar.events.add(event)
+    with open(filename, 'w', encoding="utf-8") as norse_calendar:
+        norse_calendar.writelines(calendar.serialize_iter())
+    messagebox.showinfo("ICS Created", "ICS File Created")
+
 def submit(_event):
     """ Handle GUI Click Event."""
     try:
@@ -238,10 +262,8 @@ def submit(_event):
             print(year)
             summary.config(state='normal')
             holidays = calculate_dates(year)
-            summary.delete(1.0, tk.END)
             summary.insert(1.0, print_holidays(holidays))
             summary.config(state='disabled')
-            table.delete(*table.get_children())
             for each in holidays:
                 if each.end_date is not None:
                     clean_end_date = each.end_date.strftime('%m-%d-%Y')
@@ -264,23 +286,38 @@ def submit(_event):
                                      clean_end_date,
                                      clean_description,
                                      clean_schedule))
+            generate_button.config(state='normal')
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must between 1700 and 2100.")
         year_entry.delete(0,tk.END)
     return "break"
 
+def clear():
+    """Clear summary and table views."""
+    print("Clearing")
+    summary.config(state='normal')
+    summary.delete(1.0, tk.END)
+    summary.config(state='disabled')
+    table.delete(*table.get_children())
+    generate_button.config(state='disabled')
+
 window = tk.Tk()
 window.state('zoomed')
+window.title("Norse Calendar Calculator")
 header = tk.Label(text="Norse Calendar Calculator",font=("Arial", 25))
 header.pack()
 instructions = tk.Label(text="Enter a year between 1700 and 2100:")
 instructions.pack()
 year_entry = tk.Entry(width=50)
 year_entry.pack()
-submit_button = tk.Button(text="Submit")
+buttons = ttk.Frame(window)
+submit_button = tk.Button(buttons, text="Submit", command=submit)
 submit_button.bind("<Button-1>", submit)
+clear_button = tk.Button(buttons, text="Clear", command=clear)
 window.bind('<Return>', submit)
-submit_button.pack()
+buttons.pack()
+submit_button.pack(side=tk.LEFT)
+clear_button.pack()
 tab_control = ttk.Notebook(window)
 tab1 = ttk.Frame(tab_control)
 tab_control.add(tab1, text = 'Summary')
@@ -307,5 +344,7 @@ table.heading("Schedule", text="Schedule")
 table.column("Schedule", minwidth=0, stretch=True)
 table.pack(fill="both", expand=True)
 tab_control.pack(fill="both", expand=True)
-window.title("Norse Calendar Calculator")
+generate_button = tk.Button(text="Generate ICS", command=generate_ics)
+generate_button.config(state='disabled')
+generate_button.pack()
 window.mainloop()
