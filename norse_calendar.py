@@ -7,6 +7,7 @@ from typing import List, Optional
 import certifi
 import urllib3
 from ics import Calendar, Event
+import logging
 
 
 # Initialize HTTP Pool Manager
@@ -14,6 +15,8 @@ http = urllib3.PoolManager(
     cert_reqs="CERT_REQUIRED",
     ca_certs=certifi.where()
 )
+
+logging.basicConfig(filename="debug.log", level=logging.INFO)
 
 class Holiday():
     """ Class containing definition of 'Holiday' object."""
@@ -28,26 +31,20 @@ class Holiday():
         self.description = desc
         self.schedule = schedule
 
-    def print(self) -> str:
-        """ Method to print holiday class contents. """
+    def __str__(self) -> str:
+        """ Method to export holiday class contents. """
         value = f"Name: {self.name}\n"
-        print("Name:", self.name)
         if self.start_date is None:
-            print("Date: Missing")
+            logging.error("Date Missing!")
             value += "Date: Missing\n"
         elif self.end_date is None:
-            print("Date:", self.start_date.strftime('%m-%d-%Y'))
             value += f"Date: {self.start_date.strftime('%m-%d-%Y')}\n"
         else:
-            print("Start Date:", self.start_date.strftime('%m-%d-%Y'))
             value += f"Start Date: {self.start_date.strftime('%m-%d-%Y')}\n"
-            print("End Date:", self.end_date.strftime('%m-%d-%Y'))
             value += f"End Date: {self.end_date.strftime('%m-%d-%Y')}\n"
         if self.description is not None:
-            print("Description:", self.description)
             value += f"Description: {self.description}\n"
         if self.schedule is not None:
-            print("Schedule: ", self.schedule)
             value += f"Schedule: {self.schedule}\n"
         return value
 
@@ -88,7 +85,7 @@ def calculate_dates(year: int) -> List[Holiday]:
                           phenoms_json['data'][5]['day']))
 
     start_day = datetime.date(year, 1, 1)
-    print("Start Day:", start_day.strftime('%m-%d-%Y'))
+    logging.info("Start Day:", start_day.strftime('%m-%d-%Y'))
     moon_api = f"https://aa.usno.navy.mil/api/moon/phases/date?date={start_day}&nump=99"
     moons = http.request("GET", moon_api)
     moons_json = moons.json()
@@ -310,11 +307,11 @@ def calculate_dates(year: int) -> List[Holiday]:
     holidays = sorted(holidays, key=lambda holiday: holiday.start_date)
     return holidays
 
-def print_holidays(holidays: List[Holiday]) -> str:
+def generate_holidays(holidays: List[Holiday]) -> str:
     """ Generate Holiday summary string. """
     value = ""
     for holiday in holidays:
-        value += holiday.print()
+        value += holiday.__str__()
     return value
 
 def generate_ics():
@@ -347,10 +344,9 @@ def submit(_event=None):
         if year < 1700 or year > 2100:
             raise ValueError("Year must be a number between 1700 and 2100")
         else:
-            print(year)
             summary.config(state='normal')
             holidays = calculate_dates(year)
-            summary.insert(1.0, print_holidays(holidays))
+            summary.insert(1.0, generate_holidays(holidays))
             summary.config(state='disabled')
             for holiday in holidays:
                 clean_end_date = holiday.end_date.strftime('%m-%d-%Y') if holiday.end_date else ""
@@ -373,7 +369,6 @@ def submit(_event=None):
 
 def clear():
     """ Clear summary and table views. """
-    print("Clearing")
     summary.config(state='normal')
     summary.delete(1.0, tk.END)
     summary.config(state='disabled')
