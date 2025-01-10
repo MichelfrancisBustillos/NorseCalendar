@@ -1,3 +1,4 @@
+<!-- markdownlint-disable MD024 -->
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Code Cleanup
 - Rename Holiday.print() to use Holiday.__str__()
 - Readme
+- Refactor to avoid use of public variables
 
 ### Removed
 

@@ -335,7 +335,7 @@ def generate_holidays(holidays: List[Holiday]) -> str:
         value += str(holiday)
     return value
 
-def generate_ics():
+def generate_ics(year_entry: tk.Entry):
     """ Generate ICS file for Calendar Import """
     logging.info("Generating ICS File")
     filename = filedialog.asksaveasfilename(
@@ -360,7 +360,11 @@ def generate_ics():
         logging.info("ICS File Created")
     messagebox.showinfo("ICS Created", "ICS File Created")
 
-def submit(_event=None):
+def submit(year_entry: tk.Entry,
+           summary: tk.Text,
+           table: ttk.Treeview,
+           generate_button: tk.Button,
+           _event=None):
     """ Handle GUI Click Event. """
     try:
         year = int(year_entry.get())
@@ -393,7 +397,7 @@ def submit(_event=None):
         year_entry.delete(0, tk.END)
     return "break"
 
-def clear():
+def clear(summary: tk.Text, table: ttk.Treeview, year_entry: tk.Entry, generate_button: tk.Button):
     """ Clear summary and table views. """
     logging.info("Clearing GUI")
     summary.config(state='normal')
@@ -403,16 +407,8 @@ def clear():
     year_entry.delete(0, tk.END)
     generate_button.config(state='disabled')
 
-# Declare global variables at the module level
-window: tk.Tk
-year_entry: tk.Entry
-summary: tk.Text
-table: ttk.Treeview
-generate_button: tk.Button
-
 def setup_gui():
     """ Setup the GUI components. """
-    global window, year_entry, summary, table, generate_button  # pylint: disable=global-statement
     window = tk.Tk()
     window.title("Norse Calendar Calculator")
 
@@ -426,10 +422,15 @@ def setup_gui():
     year_entry.pack()
 
     buttons = ttk.Frame(window)
-    submit_button = tk.Button(buttons, text="Submit", command=submit)
-    submit_button.bind("<Button-1>", submit)
-    clear_button = tk.Button(buttons, text="Clear", command=clear)
-    window.bind('<Return>', submit)
+    submit_button = tk.Button(buttons,
+                              text="Submit",
+                              command=lambda: submit(year_entry, summary, table, generate_button))
+    submit_button.bind("<Button-1>",
+                       lambda event: submit(year_entry, summary, table, generate_button, event))
+    clear_button = tk.Button(buttons, text="Clear",
+                             command=lambda: clear(summary, table, year_entry, generate_button))
+    window.bind('<Return>',
+                lambda event: submit(year_entry, summary, table, generate_button, event))
     buttons.pack()
     submit_button.pack(side=tk.LEFT)
     clear_button.pack()
@@ -446,12 +447,8 @@ def setup_gui():
     tab2 = ttk.Frame(tab_control)
     tab_control.add(tab2, text="Table View")
     table = ttk.Treeview(tab2,
-                        columns=("Name",
-                                "Start",
-                                "End",
-                                "Description",
-                                "Schedule"),
-                        show='headings')
+                         columns=("Name", "Start", "End", "Description", "Schedule"),
+                         show='headings')
     table.heading("Name", text="Name")
     table.column("Name", minwidth=150, width=150, stretch=False)
     table.heading("Start", text="Start Date")
@@ -470,12 +467,11 @@ def setup_gui():
 
     table.configure(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set)
     table.pack(fill="both", expand=True)
-
-    tab_control.pack(fill="both", expand=True)
-
-    generate_button = tk.Button(text="Generate ICS", command=generate_ics)
+    tab_control.pack(expand=1, fill="both")
+    generate_button = tk.Button(text="Generate ICS",
+                                command=lambda: generate_ics(year_entry))
     generate_button.config(state='disabled')
-    generate_button.pack()
+    generate_button.pack(side=tk.BOTTOM)
 
     window.mainloop()
 
