@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Changed
+
+### Removed
+
+## [v1.6.0]
+
+### Added
+
 - Changelog
 - Scrollbars to Summary and Table View
 - Check that API is reachable before displaying user interface
