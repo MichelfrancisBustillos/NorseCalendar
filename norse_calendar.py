@@ -15,6 +15,7 @@ http = urllib3.PoolManager(
     ca_certs=certifi.where()
 )
 
+# Configure logging
 logging.basicConfig(filename="debug.log",
                     filemode='w',
                     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -67,6 +68,7 @@ def calculate_dates(year: int) -> List[Holiday]:
     phenoms = http.request("GET", phenom_api)
     phenoms_json = phenoms.json()
 
+    # Create Holiday objects for equinoxes and solstices
     holidays[0] = Holiday(
         "Spring Equinox",
         datetime.datetime(phenoms_json['data'][1]['year'],
@@ -296,6 +298,7 @@ def calculate_dates(year: int) -> List[Holiday]:
         "Start: Alfablot, End: Disablot"
     )
 
+    # Add Sunwait holidays
     for each in range(6):
         sunwait = Holiday(
             "Sunwait",
@@ -308,6 +311,7 @@ def calculate_dates(year: int) -> List[Holiday]:
         )
         holidays.append(sunwait)
 
+    # Sort holidays by start date
     holidays = sorted(holidays, key=lambda holiday: holiday.start_date)
     return holidays
 
@@ -369,6 +373,7 @@ def submit(_event=None):
                                      clean_end_date,
                                      clean_description,
                                      clean_schedule))
+
             generate_button.config(state='normal')
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must be between 1700 and 2100.")
@@ -394,16 +399,20 @@ generate_button: tk.Button
 
 def setup_gui():
     """ Setup the GUI components. """
-    global window, year_entry, summary, table, generate_button # pylint: disable=global-statement
+    global window, year_entry, summary, table, generate_button  # pylint: disable=global-statement
     window = tk.Tk()
-    window.state('zoomed')
+    # window.state('zoomed')
     window.title("Norse Calendar Calculator")
+
     header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
     header.pack()
+
     instructions = tk.Label(text="Enter a year between 1700 and 2100:")
     instructions.pack()
+
     year_entry = tk.Entry(width=50)
     year_entry.pack()
+
     buttons = ttk.Frame(window)
     submit_button = tk.Button(buttons, text="Submit", command=submit)
     submit_button.bind("<Button-1>", submit)
@@ -412,11 +421,16 @@ def setup_gui():
     buttons.pack()
     submit_button.pack(side=tk.LEFT)
     clear_button.pack()
+
     tab_control = ttk.Notebook(window)
     tab1 = ttk.Frame(tab_control)
     tab_control.add(tab1, text='Summary')
     summary = tk.Text(tab1, state='disabled')
+    yscrollbar = ttk.Scrollbar(tab1, orient="vertical", command=summary.yview)
+    yscrollbar.pack(side="right", fill="y")
+    summary.configure(yscrollcommand=yscrollbar.set)
     summary.pack(fill="both", expand=True)
+
     tab2 = ttk.Frame(tab_control)
     tab_control.add(tab2, text="Table View")
     table = ttk.Treeview(tab2,
@@ -427,21 +441,32 @@ def setup_gui():
                                 "Schedule"),
                         show='headings')
     table.heading("Name", text="Name")
-    table.column("Name", minwidth=0, stretch=True)
+    table.column("Name", minwidth=150, width=150, stretch=False)
     table.heading("Start", text="Start Date")
-    table.column("Start", minwidth=0, stretch=True)
+    table.column("Start", minwidth=100, width=100, stretch=False)
     table.heading("End", text="End Date")
-    table.column("End", minwidth=0, stretch=True)
+    table.column("End", minwidth=100, width=100, stretch=False)
     table.heading("Description", text="Description")
-    table.column("Description", minwidth=0, stretch=True)
+    table.column("Description", minwidth=500, width=500, stretch=True)
     table.heading("Schedule", text="Schedule")
-    table.column("Schedule", minwidth=0, stretch=True)
+    table.column("Schedule", minwidth=500, width=500, stretch=True)
+
+    yscrollbar = ttk.Scrollbar(tab2, orient="vertical", command=table.yview)
+    yscrollbar.pack(side="right", fill="y")
+    xscrollbar = ttk.Scrollbar(tab2, orient="horizontal", command=table.xview)
+    xscrollbar.pack(side="bottom", fill="x")
+
+    table.configure(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set)
     table.pack(fill="both", expand=True)
+    
     tab_control.pack(fill="both", expand=True)
+
     generate_button = tk.Button(text="Generate ICS", command=generate_ics)
     generate_button.config(state='disabled')
     generate_button.pack()
+
     window.mainloop()
 
 if __name__ == '__main__':
     setup_gui()
+    logging.info("Exiting Norse Calendar Calculator")
