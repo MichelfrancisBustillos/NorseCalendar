@@ -20,6 +20,11 @@ An ICS file can be generated using the 'Generate ICS' button at the bottom. This
 
 - [ ] Sortable Columns in Table View
 - [ ] Export as TXT functionality
+- [ ] Add Descriptions to Holidays
+- [ ] Add each day of Yule as seperate holiday for better description
+- [ ] Add Horizontal Scrolling to Table View (removing the need to launch in fullscreen)
+- [ ] Add pictures/gifs to ReadMe
+- [ ] Santize Year input (limit to 4 numbers only)
 
 See the [open issues](https://github.com/MichelfrancisBustillos/NorseCalendar/issues) for a full list of proposed features (and known issues).
 
@@ -39,5 +44,5 @@ who participated in this project.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE.md) - see the [LICENSE.md](LICENSE.md) file for
+This project is licensed under the [MIT License](LICENSE) - see the [LICENSE.md](LICENSE) file for
 details.
