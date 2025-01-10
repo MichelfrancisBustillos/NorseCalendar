@@ -2,6 +2,7 @@
 import datetime
 from dataclasses import dataclass
 import logging
+import sys
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 from typing import List, Optional
@@ -58,6 +59,18 @@ class MoonPhase:
     """ Class defining moon phase. """
     phase: str
     date: datetime.datetime
+
+def check_api_connection() -> bool:
+    """ Check API Connection. """
+    try:
+        http.request("GET", "https://aa.usno.navy.mil/api/")
+        logging.info("API Connection Successful")
+        return True
+    except urllib3.exceptions.MaxRetryError:
+        messagebox.showerror("API Connection Error",
+                             "Could not connect to the API. Please check your internet connection.")
+        logging.error("API Connection Error")
+        sys.exit(1)
 
 def calculate_dates(year: int) -> List[Holiday]:
     """ Calculate Holiday dates and return array of class Holiday. """
@@ -401,7 +414,6 @@ def setup_gui():
     """ Setup the GUI components. """
     global window, year_entry, summary, table, generate_button  # pylint: disable=global-statement
     window = tk.Tk()
-    # window.state('zoomed')
     window.title("Norse Calendar Calculator")
 
     header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
@@ -458,7 +470,7 @@ def setup_gui():
 
     table.configure(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set)
     table.pack(fill="both", expand=True)
-    
+
     tab_control.pack(fill="both", expand=True)
 
     generate_button = tk.Button(text="Generate ICS", command=generate_ics)
@@ -468,5 +480,6 @@ def setup_gui():
     window.mainloop()
 
 if __name__ == '__main__':
+    check_api_connection()
     setup_gui()
     logging.info("Exiting Norse Calendar Calculator")

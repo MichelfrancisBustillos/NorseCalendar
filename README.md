@@ -22,11 +22,10 @@ An ICS file can be generated using the 'Generate ICS' button at the bottom. This
 - [ ] Export as TXT functionality
 - [ ] Add Descriptions to Holidays
 - [ ] Add each day of Yule as seperate holiday for better description
-- [ ] Add Horizontal Scrolling to Table View (removing the need to launch in fullscreen)
+- [X] Add Horizontal Scrolling to Table View (removing the need to launch in fullscreen)
 - [ ] Add pictures/gifs to ReadMe
 - [ ] Santize Year input (limit to 4 numbers only)
-- [ ] Add try/catch in case of API failure
-- [ ] Add catch if application is run without internet
+- [X] Add try/catch in case of API failure
 
 See the [open issues](https://github.com/MichelfrancisBustillos/NorseCalendar/issues) for a full list of proposed features (and known issues).
 
