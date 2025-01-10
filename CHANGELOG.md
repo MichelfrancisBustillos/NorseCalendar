@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Code Cleanup
 - Rename Holiday.print() to use Holiday.__str__()
+- Readme
 
 ### Removed
 

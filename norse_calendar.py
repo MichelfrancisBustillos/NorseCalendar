@@ -1,14 +1,13 @@
 """ Import Modules """
 import datetime
 from dataclasses import dataclass
+import logging
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 from typing import List, Optional
 import certifi
 import urllib3
 from ics import Calendar, Event
-import logging
-
 
 # Initialize HTTP Pool Manager
 http = urllib3.PoolManager(
@@ -16,7 +15,12 @@ http = urllib3.PoolManager(
     ca_certs=certifi.where()
 )
 
-logging.basicConfig(filename="debug.log", level=logging.INFO)
+logging.basicConfig(filename="debug.log",
+                    filemode='w',
+                    format='%(asctime)s - %(levelname)s - %(message)s',
+                    level=logging.INFO)
+
+logging.info("Starting Norse Calendar Calculator")
 
 class Holiday():
     """ Class containing definition of 'Holiday' object."""
@@ -85,7 +89,7 @@ def calculate_dates(year: int) -> List[Holiday]:
                           phenoms_json['data'][5]['day']))
 
     start_day = datetime.date(year, 1, 1)
-    logging.info("Start Day:", start_day.strftime('%m-%d-%Y'))
+    logging.info("Start Day: %s", start_day.strftime('%m-%d-%Y'))
     moon_api = f"https://aa.usno.navy.mil/api/moon/phases/date?date={start_day}&nump=99"
     moons = http.request("GET", moon_api)
     moons_json = moons.json()
@@ -311,11 +315,12 @@ def generate_holidays(holidays: List[Holiday]) -> str:
     """ Generate Holiday summary string. """
     value = ""
     for holiday in holidays:
-        value += holiday.__str__()
+        value += str(holiday)
     return value
 
 def generate_ics():
     """ Generate ICS file for Calendar Import """
+    logging.info("Generating ICS File")
     filename = filedialog.asksaveasfilename(
         title='Save as...',
         filetypes=[('Calendar files', '*.ics')],
@@ -335,6 +340,7 @@ def generate_ics():
         calendar.events.add(event)
     with open(filename, 'w', encoding="utf-8") as norse_calendar:
         norse_calendar.writelines(calendar.serialize_iter())
+        logging.info("ICS File Created")
     messagebox.showinfo("ICS Created", "ICS File Created")
 
 def submit(_event=None):
@@ -342,8 +348,10 @@ def submit(_event=None):
     try:
         year = int(year_entry.get())
         if year < 1700 or year > 2100:
+            logging.error("%s is not a valid year.", year)
             raise ValueError("Year must be a number between 1700 and 2100")
         else:
+            logging.info("Year: %s", year)
             summary.config(state='normal')
             holidays = calculate_dates(year)
             summary.insert(1.0, generate_holidays(holidays))
@@ -369,6 +377,7 @@ def submit(_event=None):
 
 def clear():
     """ Clear summary and table views. """
+    logging.info("Clearing GUI")
     summary.config(state='normal')
     summary.delete(1.0, tk.END)
     summary.config(state='disabled')
