@@ -470,6 +470,18 @@ def clear(summary: tk.Text, table: ttk.Treeview, year_entry: tk.Entry, generate_
     table.delete(*table.get_children())
     year_entry.delete(0, tk.END)
     generate_button.config(state='disabled')
+    
+def treeview_sort_column(tv, col, reverse):
+    l = [(tv.set(k, col), k) for k in tv.get_children('')]
+    l.sort(reverse=reverse)
+
+    # rearrange items in sorted positions
+    for index, (val, k) in enumerate(l):
+        tv.move(k, '', index)
+
+    # reverse sort next time
+    tv.heading(col, text=col, command=lambda _col=col: \
+                 treeview_sort_column(tv, _col, not reverse))
 
 def setup_gui():
     """ Setup the GUI components. """
@@ -510,9 +522,15 @@ def setup_gui():
 
     tab2 = ttk.Frame(tab_control)
     tab_control.add(tab2, text="Table View")
+    columns = ("Name", "Start", "End", "Description", "Schedule")
     table = ttk.Treeview(tab2,
-                         columns=("Name", "Start", "End", "Description", "Schedule"),
+                         columns=columns,
                          show='headings')
+
+    for col in columns:
+        table.heading(col, text=col, command=lambda _col=col: \
+                        treeview_sort_column(table, _col, False))
+
     table.heading("Name", text="Name")
     table.column("Name", minwidth=150, width=150, stretch=False)
     table.heading("Start", text="Start Date")
