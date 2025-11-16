@@ -14,6 +14,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [v1.6.1]
+
+### Added
+
+- New Holidays
+
+### Changed
+
+- None
+
+### Removed
+
+- None
+
 ## [v1.6.0]
 
 ### Added

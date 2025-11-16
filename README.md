@@ -18,8 +18,8 @@ An ICS file can be generated using the 'Generate ICS' button at the bottom. This
 
 ## Roadmap
 
-- [ ] Sortable Columns in Table View
-- [ ] Export as TXT functionality
+- [X] Sortable Columns in Table View
+- [X] Export as TXT functionality
 - [ ] Add Descriptions to Holidays
 - [ ] Add each day of Yule as seperate holiday for better description
 - [X] Add Horizontal Scrolling to Table View (removing the need to launch in fullscreen)

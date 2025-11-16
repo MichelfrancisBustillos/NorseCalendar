@@ -394,10 +394,26 @@ def calculate_dates(year: int) -> List[Holiday]:
 
 def generate_holidays(holidays: List[Holiday]) -> str:
     """ Generate Holiday summary string. """
+    logging.info("Generating Holiday Summary")
     value = ""
     for holiday in holidays:
         value += str(holiday)
     return value
+
+def generate_printable_summary(year_entry: tk.Entry):
+    """ Generate Printable Summary File """
+    logging.info("Generating Printable Summary File")
+    filename = filedialog.asksaveasfilename(
+        title='Save as...',
+        filetypes=[('Text files', '*.txt')],
+        defaultextension='.txt'
+    )
+    year = int(year_entry.get())
+    holidays = calculate_dates(year)
+    with open(filename, 'w', encoding="utf-8") as norse_calendar:
+        norse_calendar.write(generate_holidays(holidays))
+        logging.info("Printable Summary File Created")
+    messagebox.showinfo("Summary Created", "Printable Summary File Created")
 
 def generate_ics(year_entry: tk.Entry):
     """ Generate ICS file for Calendar Import """
@@ -427,7 +443,8 @@ def generate_ics(year_entry: tk.Entry):
 def submit(year_entry: tk.Entry,
            summary: tk.Text,
            table: ttk.Treeview,
-           generate_button: tk.Button,
+           generate_ics_button: tk.Button,
+           generate_printable_button: tk.Button,
            _event=None):
     """ Handle GUI Click Event. """
     try:
@@ -455,13 +472,18 @@ def submit(year_entry: tk.Entry,
                                      clean_description,
                                      clean_schedule))
 
-            generate_button.config(state='normal')
+            generate_ics_button.config(state='normal')
+            generate_printable_button.config(state='normal')
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must be between 1700 and 2100.")
         year_entry.delete(0, tk.END)
     return "break"
 
-def clear(summary: tk.Text, table: ttk.Treeview, year_entry: tk.Entry, generate_button: tk.Button):
+def clear(summary: tk.Text,
+          table: ttk.Treeview,
+          year_entry: tk.Entry,
+          generate_ics_button: tk.Button,
+          generate_printable_button: tk.Button):
     """ Clear summary and table views. """
     logging.info("Clearing GUI")
     summary.config(state='normal')
@@ -469,11 +491,19 @@ def clear(summary: tk.Text, table: ttk.Treeview, year_entry: tk.Entry, generate_
     summary.config(state='disabled')
     table.delete(*table.get_children())
     year_entry.delete(0, tk.END)
-    generate_button.config(state='disabled')
-    
+    generate_ics_button.config(state='disabled')
+    generate_printable_button.config(state='disabled')
+
 def treeview_sort_column(tv, col, reverse):
+    """ Sort Treeview Column. """
     l = [(tv.set(k, col), k) for k in tv.get_children('')]
-    l.sort(reverse=reverse)
+    if col in ["Start", "End"]:
+        l.sort(key=lambda t:
+            datetime.datetime.strptime(t[0],
+                                        '%m-%d-%Y') if t[0] else datetime.datetime.max,
+               reverse=reverse)
+    else:
+        l.sort(reverse=reverse)
 
     # rearrange items in sorted positions
     for index, (val, k) in enumerate(l):
@@ -497,17 +527,35 @@ def setup_gui():
     year_entry = tk.Entry(width=50)
     year_entry.pack()
 
-    buttons = ttk.Frame(window)
-    submit_button = tk.Button(buttons,
+    top_buttons = ttk.Frame(window)
+    submit_button = tk.Button(top_buttons,
                               text="Submit",
-                              command=lambda: submit(year_entry, summary, table, generate_button))
+                              command=lambda: submit(year_entry,
+                                                     summary,
+                                                     table,
+                                                     generate_ics_button,
+                                                     generate_printable_button))
     submit_button.bind("<Button-1>",
-                       lambda event: submit(year_entry, summary, table, generate_button, event))
-    clear_button = tk.Button(buttons, text="Clear",
-                             command=lambda: clear(summary, table, year_entry, generate_button))
+                       lambda event: submit(year_entry,
+                                            summary,
+                                            table,
+                                            generate_ics_button,
+                                            generate_printable_button,
+                                            event))
+    clear_button = tk.Button(top_buttons, text="Clear",
+                             command=lambda: clear(summary,
+                                                   table,
+                                                   year_entry,
+                                                   generate_ics_button,
+                                                   generate_printable_button))
     window.bind('<Return>',
-                lambda event: submit(year_entry, summary, table, generate_button, event))
-    buttons.pack()
+                lambda event: submit(year_entry,
+                                     summary,
+                                     table,
+                                     generate_ics_button,
+                                     generate_printable_button,
+                                     event))
+    top_buttons.pack()
     submit_button.pack(side=tk.LEFT)
     clear_button.pack()
 
@@ -550,10 +598,17 @@ def setup_gui():
     table.configure(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set)
     table.pack(fill="both", expand=True)
     tab_control.pack(expand=1, fill="both")
-    generate_button = tk.Button(text="Generate ICS",
+
+    bottom_buttons = ttk.Frame(window)
+    generate_ics_button = tk.Button(bottom_buttons, text="Generate ICS",
                                 command=lambda: generate_ics(year_entry))
-    generate_button.config(state='disabled')
-    generate_button.pack(side=tk.BOTTOM)
+    generate_ics_button.config(state='disabled')
+    generate_printable_button = tk.Button(bottom_buttons, text="Generate Printable Summary",
+                                command=lambda: generate_printable_summary(year_entry))
+    generate_printable_button.config(state='disabled')
+    bottom_buttons.pack()
+    generate_ics_button.pack(side=tk.LEFT)
+    generate_printable_button.pack()
 
     window.mainloop()
 
