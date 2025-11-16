@@ -74,12 +74,16 @@ def check_api_connection() -> bool:
 
 def calculate_dates(year: int) -> List[Holiday]:
     """ Calculate Holiday dates and return array of class Holiday. """
-    holidays = [None] * 20
+    holidays = [None] * 26  # Preallocate list for 26 holidays
 
     # Get Core Dates
     phenom_api = f"https://aa.usno.navy.mil/api/seasons?year={year}&tz=-6&dst=true"
     phenoms = http.request("GET", phenom_api)
     phenoms_json = phenoms.json()
+
+    phenom_api_prev = f"https://aa.usno.navy.mil/api/seasons?year={year-1}&tz=-6&dst=true"
+    phenoms_prev = http.request("GET", phenom_api_prev)
+    phenoms_prev_json = phenoms_prev.json()
 
     # Create Holiday objects for equinoxes and solstices
     holidays[0] = Holiday(
@@ -309,6 +313,66 @@ def calculate_dates(year: int) -> List[Holiday]:
         ].start_date,
         None,
         "Start: Alfablot, End: Disablot"
+    )
+
+    holidays[20] = Holiday(
+        "Welcome Goi and Freya",
+        #feb 1st
+        datetime.datetime(year, 2, 1),
+        None,
+        None,
+        "February 1st"
+    )
+
+    holidays[21] = Holiday(
+        "Loki Day",
+        #April 1st
+        datetime.datetime(year, 4, 1),
+        None,
+        None,
+        "April 1st"
+    )
+
+    holidays[22] = Holiday(
+        "Lokabrenna",
+        #July 13th
+        datetime.datetime(year, 7, 13),
+        None,
+        None,
+        "July 13th"
+    )
+
+    holidays[23] = Holiday(
+        "Walpurgisnacht",
+        #April 30th
+        datetime.datetime(year, 4, 30),
+        None,
+        None,
+        "April 30th"
+    )
+
+    holidays[24] = Holiday(
+        "Mayday",
+        #May 1st
+        datetime.datetime(year, 5, 1),
+        None,
+        None,
+        "May 1st"
+    )
+
+    previous_winter_solstice = datetime.datetime(phenoms_prev_json['data'][5]['year'],
+                          phenoms_prev_json['data'][5]['month'],
+                          phenoms_prev_json['data'][5]['day'])
+
+    holidays[25] = Holiday(
+        "Charming of the Plough",
+        #Halfway between Winter Solstice and Spring Equinox
+        (previous_winter_solstice + (((holidays[
+            next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
+        ].start_date) - previous_winter_solstice) / 2)),
+        None,
+        None,
+        "Halfway between previous Winter Solstice and Spring Equinox"
     )
 
     # Add Sunwait holidays
