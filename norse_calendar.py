@@ -401,7 +401,7 @@ def generate_holidays(holidays: List[Holiday]) -> str:
         value += str(holiday)
     return value
 
-def generate_printable_summary(year_entry: tk.Entry):
+def generate_printable_summary(year_combobox: tk.Entry):
     """ Generate Printable Summary File """
     logging.info("Generating Printable Summary File")
     filename = filedialog.asksaveasfilename(
@@ -409,14 +409,14 @@ def generate_printable_summary(year_entry: tk.Entry):
         filetypes=[('Text files', '*.txt')],
         defaultextension='.txt'
     )
-    year = int(year_entry.get())
+    year = int(year_combobox.get())
     holidays = calculate_dates(year)
     with open(filename, 'w', encoding="utf-8") as norse_calendar:
         norse_calendar.write(generate_holidays(holidays))
         logging.info("Printable Summary File Created")
     messagebox.showinfo("Summary Created", "Printable Summary File Created")
 
-def generate_ics(year_entry: tk.Entry):
+def generate_ics(year_combobox: tk.Entry):
     """ Generate ICS file for Calendar Import """
     logging.info("Generating ICS File")
     filename = filedialog.asksaveasfilename(
@@ -424,7 +424,7 @@ def generate_ics(year_entry: tk.Entry):
         filetypes=[('Calendar files', '*.ics')],
         defaultextension='.ics'
     )
-    year = int(year_entry.get())
+    year = int(year_combobox.get())
     holidays = calculate_dates(year)
     calendar = Calendar()
     for holiday in holidays:
@@ -441,7 +441,7 @@ def generate_ics(year_entry: tk.Entry):
         logging.info("ICS File Created")
     messagebox.showinfo("ICS Created", "ICS File Created")
 
-def submit(year_entry: tk.Entry,
+def submit(year_combobox: tk.Entry,
            summary: tk.Text,
            table: ttk.Treeview,
            generate_ics_button: tk.Button,
@@ -450,7 +450,7 @@ def submit(year_entry: tk.Entry,
            _event=None):
     """ Handle GUI Click Event. """
     try:
-        year = int(year_entry.get())
+        year = int(year_combobox.get())
         if year < 1700 or year > 2100:
             logging.error("%s is not a valid year.", year)
             raise ValueError("Year must be a number between 1700 and 2100")
@@ -490,12 +490,12 @@ def submit(year_entry: tk.Entry,
             generate_printable_button.config(state='normal')
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must be between 1700 and 2100.")
-        year_entry.delete(0, tk.END)
+        year_combobox.delete(0, tk.END)
     return "break"
 
 def clear(summary: tk.Text,
           table: ttk.Treeview,
-          year_entry: tk.Entry,
+          year_combobox: tk.Entry,
           generate_ics_button: tk.Button,
           generate_printable_button: tk.Button,
           calendar_widget: tkcalendar.Calendar):
@@ -505,7 +505,7 @@ def clear(summary: tk.Text,
     summary.delete(1.0, tk.END)
     summary.config(state='disabled')
     table.delete(*table.get_children())
-    year_entry.delete(0, tk.END)
+    year_combobox.delete(0, tk.END)
     generate_ics_button.config(state='disabled')
     generate_printable_button.config(state='disabled')
     calendar_widget.calevent_remove('all')
@@ -553,20 +553,23 @@ def setup_gui():
     instructions = tk.Label(text="Enter a year between 1700 and 2100:")
     instructions.pack()
 
-    year_entry = tk.Entry(width=50)
-    year_entry.pack()
+    current_year = datetime.datetime.now().year
+    years = [str(year) for year in range(1700, 2101)]
+    year_combobox = ttk.Combobox(window, values=years)
+    year_combobox.set(str(current_year))
+    year_combobox.pack(pady=10)
 
     top_buttons = ttk.Frame(window)
     submit_button = tk.Button(top_buttons,
                               text="Submit",
-                              command=lambda: submit(year_entry,
+                              command=lambda: submit(year_combobox,
                                                      summary,
                                                      table,
                                                      generate_ics_button,
                                                      generate_printable_button,
                                                      calendar_widget))
     submit_button.bind("<Button-1>",
-                       lambda event: submit(year_entry,
+                       lambda event: submit(year_combobox,
                                             summary,
                                             table,
                                             generate_ics_button,
@@ -576,12 +579,12 @@ def setup_gui():
     clear_button = tk.Button(top_buttons, text="Clear",
                              command=lambda: clear(summary,
                                                    table,
-                                                   year_entry,
+                                                   year_combobox,
                                                    generate_ics_button,
                                                    generate_printable_button,
                                                    calendar_widget))
     window.bind('<Return>',
-                lambda event: submit(year_entry,
+                lambda event: submit(year_combobox,
                                      summary,
                                      table,
                                      generate_ics_button,
@@ -641,10 +644,10 @@ def setup_gui():
 
     bottom_buttons = ttk.Frame(window)
     generate_ics_button = tk.Button(bottom_buttons, text="Generate ICS",
-                                command=lambda: generate_ics(year_entry))
+                                command=lambda: generate_ics(year_combobox))
     generate_ics_button.config(state='disabled')
     generate_printable_button = tk.Button(bottom_buttons, text="Generate Printable Summary",
-                                command=lambda: generate_printable_summary(year_entry))
+                                command=lambda: generate_printable_summary(year_combobox))
     generate_printable_button.config(state='disabled')
     bottom_buttons.pack()
     generate_ics_button.pack(side=tk.LEFT)
