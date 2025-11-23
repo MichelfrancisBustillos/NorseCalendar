@@ -4,3 +4,4 @@ urllib3
 tkinter
 ics
 tkcalendar
+webbrowser

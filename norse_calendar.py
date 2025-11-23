@@ -9,6 +9,7 @@ from typing import List, Optional
 import certifi
 import tkcalendar
 import urllib3
+import webbrowser
 from ics import Calendar, Event
 
 # Initialize HTTP Pool Manager
@@ -25,7 +26,32 @@ logging.basicConfig(filename="debug.log",
 
 logging.info("Starting Norse Calendar Calculator")
 
+def update_check():
+    """ Check for updates to the application. """
+    logging.info("Checking for updates...")
+    try:
+        url = (
+            "https://api.github.com/repos/"
+            "michelfrancisbustillos/norsecalendar/releases/latest"
+        )
+        response = http.request("GET", url)
+        latest_version = response.json()["name"]
+        current_version = "v1.6.1"  # Current version of the application
+        if latest_version != current_version:
+            update_msg = (
+                f"A new version ({latest_version}) is available. "
+                f"You are using version {current_version}. "
+                "Please visit the GitHub repository to download the latest version."
+            )
+            messagebox.showinfo("Update Available", update_msg)
+            logging.info("Update available: %s", latest_version)
+        else:
+            logging.info("No updates available.")
+    except urllib3.exceptions.MaxRetryError as update_error:
+        logging.exception("Error checking for updates: %s", update_error)
+
 class ToolTip:
+    """ Tooltip class for Tkinter widgets. """
     def __init__(self, widget, text):
         self.widget = widget
         self.text = text
@@ -34,6 +60,7 @@ class ToolTip:
         self.widget.bind("<Leave>", self.hide_tip)
 
     def show_tip(self, event=None):
+        """ Display the tooltip. """
         x, y, _, _ = self.widget.bbox("insert")
         x += self.widget.winfo_rootx() + 20  # Offset to position the tooltip
         y += self.widget.winfo_rooty() + 20
@@ -49,6 +76,7 @@ class ToolTip:
         label.pack(ipadx=1)
 
     def hide_tip(self, event=None):
+        """ Hide the tooltip. """
         if self.tip_window:
             self.tip_window.destroy()
         self.tip_window = None
@@ -688,6 +716,7 @@ def setup_gui():
     window.mainloop()
 
 if __name__ == '__main__':
+    update_check()
     check_api_connection()
     setup_gui()
     logging.info("Exiting Norse Calendar Calculator")
