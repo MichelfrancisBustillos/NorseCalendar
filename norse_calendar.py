@@ -3,13 +3,13 @@ import datetime
 from dataclasses import dataclass
 import logging
 import sys
+import webbrowser
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 from typing import List, Optional
 import certifi
 import tkcalendar
 import urllib3
-import webbrowser
 from ics import Calendar, Event
 
 # Initialize HTTP Pool Manager
@@ -26,6 +26,22 @@ logging.basicConfig(filename="debug.log",
 
 logging.info("Starting Norse Calendar Calculator")
 
+def download_latest_release():
+    """ Open web browser to download latest release. """
+    logging.info("Opening web browser to download latest release...")
+    url = (
+        "https://api.github.com/repos/"
+        "michelfrancisbustillos/norsecalendar/releases/latest"
+    )
+    response = http.request("GET", url)
+    latest_version = response.json()["name"]
+    base = "https://github.com/michelfrancisbustillos/norsecalendar/releases/download/"
+    exe = "/norse_calendar.exe"
+    download_url = f"{base}{latest_version}{exe}"
+    webbrowser.open(download_url)
+    change_log_url = f"https://github.com/michelfrancisbustillos/norsecalendar/releases/tag/{latest_version}"
+    webbrowser.open(change_log_url)
+
 def update_check():
     """ Check for updates to the application. """
     logging.info("Checking for updates...")
@@ -38,12 +54,28 @@ def update_check():
         latest_version = response.json()["name"]
         current_version = "v1.6.1"  # Current version of the application
         if latest_version != current_version:
-            update_msg = (
-                f"A new version ({latest_version}) is available. "
-                f"You are using version {current_version}. "
-                "Please visit the GitHub repository to download the latest version."
-            )
-            messagebox.showinfo("Update Available", update_msg)
+            update_dialog = tk.Tk()
+            update_dialog.title("Norse Calendar Calculator")
+
+            header = tk.Label(update_dialog, text="Norse Calendar Calculator",
+                              font=("Arial", 25))
+            header.pack()
+
+            link_text = "A new version is available. Click here to download."
+            link = tk.Label(update_dialog, text=link_text,
+                            fg="blue", cursor="hand2")
+            link.pack()
+            link.bind("<Button-1>", lambda e: download_latest_release())
+
+            info_text = (f"Current version: {current_version}\n"
+                         f"Latest version: {latest_version}")
+            info = tk.Label(update_dialog, text=info_text)
+            info.pack()
+
+            ok_button = tk.Button(update_dialog, text="OK", command=update_dialog.destroy)
+            ok_button.pack()
+
+            update_dialog.mainloop()
             logging.info("Update available: %s", latest_version)
         else:
             logging.info("No updates available.")
@@ -124,8 +156,9 @@ def check_api_connection() -> bool:
         logging.info("API Connection Successful")
         return True
     except urllib3.exceptions.MaxRetryError:
-        messagebox.showerror("API Connection Error",
-                             "Could not connect to the API. Please check your internet connection.")
+        err_msg = ("Could not connect to the API. "
+                   "Please check your internet connection.")
+        messagebox.showerror("API Connection Error", err_msg)
         logging.error("API Connection Error")
         sys.exit(1)
 
@@ -616,39 +649,27 @@ def setup_gui():
     year_combobox.pack(pady=10)
 
     top_buttons = ttk.Frame(window)
-    submit_button = tk.Button(top_buttons,
-                              text="Submit",
-                              command=lambda: submit(year_combobox,
-                                                     summary,
-                                                     table,
-                                                     generate_ics_button,
-                                                     generate_printable_button,
-                                                     calendar_widget))
+
+    # helper functions to keep lambda lines short
+    def do_submit(event=None):
+        return submit(year_combobox, summary, table,
+                      generate_ics_button, generate_printable_button,
+                      calendar_widget, event)
+
+    def do_clear():
+        return clear(summary, table, year_combobox,
+                     generate_ics_button, generate_printable_button,
+                     calendar_widget)
+
+    submit_button = tk.Button(top_buttons, text="Submit", command=do_submit)
     ToolTip(submit_button, "Submit the selected year.")
-    submit_button.bind("<Button-1>",
-                       lambda event: submit(year_combobox,
-                                            summary,
-                                            table,
-                                            generate_ics_button,
-                                            generate_printable_button,
-                                            calendar_widget,
-                                            event))
-    clear_button = tk.Button(top_buttons, text="Clear",
-                             command=lambda: clear(summary,
-                                                   table,
-                                                   year_combobox,
-                                                   generate_ics_button,
-                                                   generate_printable_button,
-                                                   calendar_widget))
+    submit_button.bind("<Button-1>", do_submit)
+
+    clear_button = tk.Button(top_buttons, text="Clear", command=do_clear)
     ToolTip(clear_button, "Clear all fields.")
-    window.bind('<Return>',
-                lambda event: submit(year_combobox,
-                                     summary,
-                                     table,
-                                     generate_ics_button,
-                                     generate_printable_button,
-                                     calendar_widget,
-                                     event))
+
+    window.bind('<Return>', do_submit)
+
     top_buttons.pack()
     submit_button.pack(side=tk.LEFT)
     clear_button.pack()
@@ -665,13 +686,14 @@ def setup_gui():
     tab2 = ttk.Frame(tab_control)
     tab_control.add(tab2, text="Table View")
     columns = ("Name", "Start", "End", "Description", "Schedule")
-    table = ttk.Treeview(tab2,
-                         columns=columns,
-                         show='headings')
+    table = ttk.Treeview(tab2, columns=columns, show='headings')
+
+    # helper to produce short commands for sorting
+    def make_sort_command(col_name):
+        return lambda: treeview_sort_column(table, col_name, False)
 
     for col in columns:
-        table.heading(col, text=col, command=lambda _col=col: \
-                        treeview_sort_column(table, _col, False))
+        table.heading(col, text=col, command=make_sort_command(col))
 
     table.heading("Name", text="Name")
     table.column("Name", minwidth=150, width=150, stretch=False)
