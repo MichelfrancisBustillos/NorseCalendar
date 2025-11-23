@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [v1.7.0]
+
+### Added
+
+- Calendar View Tab
+- Clickable Events in Calendar View to show details
+
+### Changed
+
+- None
+
+### Removed
+
+- None
+
 ## [v1.6.2]
 
 ### Added

@@ -7,6 +7,7 @@ import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 from typing import List, Optional
 import certifi
+import tkcalendar
 import urllib3
 from ics import Calendar, Event
 
@@ -445,6 +446,7 @@ def submit(year_entry: tk.Entry,
            table: ttk.Treeview,
            generate_ics_button: tk.Button,
            generate_printable_button: tk.Button,
+           calendar_widget: tkcalendar.Calendar,
            _event=None):
     """ Handle GUI Click Event. """
     try:
@@ -471,7 +473,12 @@ def submit(year_entry: tk.Entry,
                                      clean_end_date,
                                      clean_description,
                                      clean_schedule))
-
+                event_details = f"{holiday.name}\nDescription: {holiday.description}\nSchedule: {holiday.schedule}"
+                calendar_widget.calevent_create(holiday.start_date, event_details, 'holiday')
+            calendar_widget.config(state='normal')
+            calendar_widget.selection_set(datetime.date(year,
+                                                        datetime.date.today().month,
+                                                        datetime.date.today().day))
             generate_ics_button.config(state='normal')
             generate_printable_button.config(state='normal')
     except ValueError:
@@ -483,7 +490,8 @@ def clear(summary: tk.Text,
           table: ttk.Treeview,
           year_entry: tk.Entry,
           generate_ics_button: tk.Button,
-          generate_printable_button: tk.Button):
+          generate_printable_button: tk.Button,
+          calendar_widget: tkcalendar.Calendar):
     """ Clear summary and table views. """
     logging.info("Clearing GUI")
     summary.config(state='normal')
@@ -493,6 +501,9 @@ def clear(summary: tk.Text,
     year_entry.delete(0, tk.END)
     generate_ics_button.config(state='disabled')
     generate_printable_button.config(state='disabled')
+    calendar_widget.calevent_remove('all')
+    calendar_widget.selection_set(datetime.date.today())
+    calendar_widget.config(state='disabled')
 
 def treeview_sort_column(tv, col, reverse):
     """ Sort Treeview Column. """
@@ -512,6 +523,17 @@ def treeview_sort_column(tv, col, reverse):
     # reverse sort next time
     tv.heading(col, text=col, command=lambda _col=col: \
                  treeview_sort_column(tv, _col, not reverse))
+
+def show_calendar_event_details(calendar_widget: tkcalendar.Calendar):
+    """ Show details of selected calendar event. """
+    selected_date = calendar_widget.selection_get()
+    logging.info("Selected Date: %s", selected_date.strftime('%m-%d-%Y'))
+    event_ids = calendar_widget.get_calevents(selected_date)
+    for event_id in event_ids:
+        logging.info("Event ID: %s", event_id)
+        event_text = calendar_widget.calevent_cget(event_id, option="text")
+        messagebox.showinfo("Event Details",
+                            f"Event: {event_text}\nDate: {selected_date.strftime('%m-%d-%Y')}")
 
 def setup_gui():
     """ Setup the GUI components. """
@@ -534,26 +556,30 @@ def setup_gui():
                                                      summary,
                                                      table,
                                                      generate_ics_button,
-                                                     generate_printable_button))
+                                                     generate_printable_button,
+                                                     calendar_widget))
     submit_button.bind("<Button-1>",
                        lambda event: submit(year_entry,
                                             summary,
                                             table,
                                             generate_ics_button,
                                             generate_printable_button,
+                                            calendar_widget,
                                             event))
     clear_button = tk.Button(top_buttons, text="Clear",
                              command=lambda: clear(summary,
                                                    table,
                                                    year_entry,
                                                    generate_ics_button,
-                                                   generate_printable_button))
+                                                   generate_printable_button,
+                                                   calendar_widget))
     window.bind('<Return>',
                 lambda event: submit(year_entry,
                                      summary,
                                      table,
                                      generate_ics_button,
                                      generate_printable_button,
+                                     calendar_widget,
                                      event))
     top_buttons.pack()
     submit_button.pack(side=tk.LEFT)
@@ -597,6 +623,13 @@ def setup_gui():
 
     table.configure(xscrollcommand=xscrollbar.set, yscrollcommand=yscrollbar.set)
     table.pack(fill="both", expand=True)
+
+    tab3 = ttk.Frame(tab_control)
+    tab_control.add(tab3, text="Calendar")
+    calendar_widget = tkcalendar.Calendar(tab3, selectmode='day', state='disabled')
+    calendar_widget.bind("<<CalendarSelected>>",
+                         lambda event: show_calendar_event_details(calendar_widget))
+    calendar_widget.pack(fill="both", expand=True)
     tab_control.pack(expand=1, fill="both")
 
     bottom_buttons = ttk.Frame(window)
