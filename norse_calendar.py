@@ -473,9 +473,16 @@ def submit(year_entry: tk.Entry,
                                      clean_end_date,
                                      clean_description,
                                      clean_schedule))
-                event_details = f"{holiday.name}\nDescription: {holiday.description}\nSchedule: {holiday.schedule}"
+                event_details = (
+                    f"{holiday.name}\n"
+                    f"Description: {holiday.description}\n"
+                    f"Schedule: {holiday.schedule}"
+                )
                 calendar_widget.calevent_create(holiday.start_date, event_details, 'holiday')
-            calendar_widget.config(state='normal')
+            calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
+            calendar_widget.config(state='normal',
+                                   mindate=datetime.date((year-1), 12, 31),
+                                   maxdate=datetime.date((year+1), 1, 1))
             calendar_widget.selection_set(datetime.date(year,
                                                         datetime.date.today().month,
                                                         datetime.date.today().day))
