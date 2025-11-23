@@ -25,6 +25,34 @@ logging.basicConfig(filename="debug.log",
 
 logging.info("Starting Norse Calendar Calculator")
 
+class ToolTip:
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tip_window = None
+        self.widget.bind("<Enter>", self.show_tip)
+        self.widget.bind("<Leave>", self.hide_tip)
+
+    def show_tip(self, event=None):
+        x, y, _, _ = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 20  # Offset to position the tooltip
+        y += self.widget.winfo_rooty() + 20
+
+        # Create a Toplevel window for the tooltip
+        self.tip_window = tk.Toplevel(self.widget)
+        self.tip_window.wm_overrideredirect(True)  # Remove window decorations
+        self.tip_window.wm_geometry(f"+{x}+{y}")
+
+        label = tk.Label(self.tip_window, text=self.text, justify='left',
+                         background="#ffffe0", relief='solid', borderwidth=1,
+                         font=("tahoma", "8", "normal"))
+        label.pack(ipadx=1)
+
+    def hide_tip(self, event=None):
+        if self.tip_window:
+            self.tip_window.destroy()
+        self.tip_window = None
+
 class Holiday():
     """ Class containing definition of 'Holiday' object."""
     def __init__(self,
@@ -550,7 +578,7 @@ def setup_gui():
     header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
     header.pack()
 
-    instructions = tk.Label(text="Enter a year between 1700 and 2100:")
+    instructions = tk.Label(text="Select a year between 1700 and 2100:")
     instructions.pack()
 
     current_year = datetime.datetime.now().year
@@ -568,6 +596,7 @@ def setup_gui():
                                                      generate_ics_button,
                                                      generate_printable_button,
                                                      calendar_widget))
+    ToolTip(submit_button, "Submit the selected year.")
     submit_button.bind("<Button-1>",
                        lambda event: submit(year_combobox,
                                             summary,
@@ -583,6 +612,7 @@ def setup_gui():
                                                    generate_ics_button,
                                                    generate_printable_button,
                                                    calendar_widget))
+    ToolTip(clear_button, "Clear all fields.")
     window.bind('<Return>',
                 lambda event: submit(year_combobox,
                                      summary,
@@ -645,9 +675,11 @@ def setup_gui():
     bottom_buttons = ttk.Frame(window)
     generate_ics_button = tk.Button(bottom_buttons, text="Generate ICS",
                                 command=lambda: generate_ics(year_combobox))
+    ToolTip(generate_ics_button, "Generate an ICS file for calendar import.")
     generate_ics_button.config(state='disabled')
     generate_printable_button = tk.Button(bottom_buttons, text="Generate Printable Summary",
                                 command=lambda: generate_printable_summary(year_combobox))
+    ToolTip(generate_printable_button, "Generate a printable summary of the holidays.")
     generate_printable_button.config(state='disabled')
     bottom_buttons.pack()
     generate_ics_button.pack(side=tk.LEFT)

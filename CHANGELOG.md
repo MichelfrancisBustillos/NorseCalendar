@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Calendar View Tab
 - Clickable Events in Calendar View to show details
+- Tooltips for Buttons
 
 ### Changed
 
