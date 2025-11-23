@@ -9,25 +9,14 @@ A small application that calculates the dates for the most common Norse Pagan Ho
 2. Run the downloaded application (norse_calendar.exe)
 3. Enter the year for which you would like to calculate holidays (between 1700 and 2100).
 
-Two display options are provided for viewing the results:
+Three display options are provided for viewing the results:
 
 - Summary: A 'copy & paste'-able view of each event
 - Table View: A table with each event and it's properties are displayed in an easier to read format.
+- Calendar View: A monthly calendar view with the events marked on their respective dates.
 
 An ICS file can be generated using the 'Generate ICS' button at the bottom. This can be used to import the calculated holidays into most popular calendar software (Google Calendar, Outlook, Apple Calendar, etc.)
-
-## Roadmap
-
-- [X] Sortable Columns in Table View
-- [X] Export as TXT functionality
-- [ ] Add Descriptions to Holidays
-- [ ] Add each day of Yule as seperate holiday for better description
-- [X] Add Horizontal Scrolling to Table View (removing the need to launch in fullscreen)
-- [ ] Add pictures/gifs to ReadMe
-- [ ] Santize Year input (limit to 4 numbers only)
-- [X] Add try/catch in case of API failure
-
-See the [open issues](https://github.com/MichelfrancisBustillos/NorseCalendar/issues) for a full list of proposed features (and known issues).
+A printable summary can be generated using the 'Generate Printable Summary' button at the bottom. This creates a text file that can be printed for offline reference.
 
 ## Versioning
 
