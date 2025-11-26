@@ -82,7 +82,7 @@ def calculate_dates(year: int) -> List[Holiday]:
     phenoms_prev_json = get_core_dates(year - 1)
 
     # Create Holiday objects for equinoxes and solstices
-    if len(phenoms_json['data']) < 6:
+    if len(phenoms_json['data']) < 6 or len(phenoms_prev_json['data']) < 6:
         logging.error("Insufficient data from phenom API for year %d.", year)
         return None
 

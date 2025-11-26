@@ -200,7 +200,7 @@ def submit(current_year: int,
             logging.info("Calculating holidays...")
             logging.info("Start Year: %d, End Year: %d", start_year, end_year)
             years = [start_year] if end_year == start_year else list(range(start_year, end_year+1))
-            print(years)
+
             for year in years:
                 logging.info("Year: %s", year)
                 summary.config(state='normal')
