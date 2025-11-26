@@ -50,19 +50,42 @@ class MoonPhase:
 
 def get_core_dates(year: int) -> dict:
     """ Get Core Dates from API. """
+    logging.info("Retrieving Core Dates for year %d", year)
     phenom_api = f"https://aa.usno.navy.mil/api/seasons?year={year}&tz=-6&dst=true"
     phenoms = http.request("GET", phenom_api)
     phenoms_json = phenoms.json()
+    logging.info("Core Dates Retrieved for year %d", year)
     return phenoms_json
+
+def get_moon_phases(year: int) -> List[MoonPhase]:
+    """ Get Moon Phases from API. """
+    logging.info("Retrieving Moon Phases for year %d", year)
+    moon_api = f"https://aa.usno.navy.mil/api/moon/phases/date?date={year}-01-01&nump=99"
+    moons = http.request("GET", moon_api)
+    moons_json = moons.json()
+    all_moons = []
+    for moon in range(moons_json['numphases']):
+        phase = moons_json['phasedata'][moon]['phase']
+        date = datetime.datetime(
+            moons_json['phasedata'][moon]['year'],
+            moons_json['phasedata'][moon]['month'],
+            moons_json['phasedata'][moon]['day'])
+        all_moons.append(MoonPhase(phase=phase,date=date))
+    logging.info("Moon Phases Retrieved for year %d", year)
+    return all_moons
 
 def calculate_dates(year: int) -> List[Holiday]:
     """ Calculate Holiday dates and return array of class Holiday. """
     holidays = [None] * 26  # Preallocate list for 26 holidays
-
+    logging.info("Calculating holidays for year %d", year)
     phenoms_json = get_core_dates(year)
     phenoms_prev_json = get_core_dates(year - 1)
 
     # Create Holiday objects for equinoxes and solstices
+    if len(phenoms_json['data']) < 6:
+        logging.error("Insufficient data from phenom API for year %d.", year)
+        return None
+
     holidays[0] = Holiday(
         "Spring Equinox",
         datetime.datetime(phenoms_json['data'][1]['year'],
@@ -84,19 +107,8 @@ def calculate_dates(year: int) -> List[Holiday]:
                           phenoms_json['data'][5]['month'],
                           phenoms_json['data'][5]['day']))
 
-    start_day = datetime.date(year, 1, 1)
-    logging.info("Start Day: %s", start_day.strftime('%m-%d-%Y'))
-    moon_api = f"https://aa.usno.navy.mil/api/moon/phases/date?date={start_day}&nump=99"
-    moons = http.request("GET", moon_api)
-    moons_json = moons.json()
-    all_moons = []
-    for moon in range(moons_json['numphases']):
-        phase = moons_json['phasedata'][moon]['phase']
-        date = datetime.datetime(
-            moons_json['phasedata'][moon]['year'],
-            moons_json['phasedata'][moon]['month'],
-            moons_json['phasedata'][moon]['day'])
-        all_moons.append(MoonPhase(phase=phase,date=date))
+    # Get Moon Phases
+    all_moons = get_moon_phases(year)
 
     def next_new_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
         """ Get Next New Moon Date."""

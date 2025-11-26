@@ -134,7 +134,7 @@ def generate_holidays(holidays: List[Holiday]) -> str:
         value += str(holiday)
     return value
 
-def generate_printable_summary(year_combobox: tk.Entry):
+def generate_printable_summary(start_year_selector: tk.Entry):
     """ Generate Printable Summary File """
     logging.info("Generating Printable Summary File")
     filename = filedialog.asksaveasfilename(
@@ -142,14 +142,14 @@ def generate_printable_summary(year_combobox: tk.Entry):
         filetypes=[('Text files', '*.txt')],
         defaultextension='.txt'
     )
-    year = int(year_combobox.get())
+    year = int(start_year_selector.get())
     holidays = calculate_dates(year)
     with open(filename, 'w', encoding="utf-8") as norse_calendar:
         norse_calendar.write(generate_holidays(holidays))
         logging.info("Printable Summary File Created")
     messagebox.showinfo("Summary Created", "Printable Summary File Created")
 
-def generate_ics(year_combobox: tk.Entry):
+def generate_ics(start_year_selector: tk.Entry):
     """ Generate ICS file for Calendar Import """
     logging.info("Generating ICS File")
     filename = filedialog.asksaveasfilename(
@@ -157,7 +157,7 @@ def generate_ics(year_combobox: tk.Entry):
         filetypes=[('Calendar files', '*.ics')],
         defaultextension='.ics'
     )
-    year = int(year_combobox.get())
+    year = int(start_year_selector.get())
     holidays = calculate_dates(year)
     calendar = Calendar()
     for holiday in holidays:
@@ -174,7 +174,9 @@ def generate_ics(year_combobox: tk.Entry):
         logging.info("ICS File Created")
     messagebox.showinfo("ICS Created", "ICS File Created")
 
-def submit(year_combobox: tk.Entry,
+def submit(current_year: int,
+           start_year_selector: tk.Entry,
+           end_year_selector: tk.Entry,
            summary: tk.Text,
            table: ttk.Treeview,
            generate_ics_button: tk.Button,
@@ -182,53 +184,73 @@ def submit(year_combobox: tk.Entry,
            calendar_widget: tkcalendar.Calendar,
            _event=None):
     """ Handle GUI Click Event. """
+    logging.info("Submit Button Clicked")
     try:
-        year = int(year_combobox.get())
-        if year < 1700 or year > 2100:
-            logging.error("%s is not a valid year.", year)
-            raise ValueError("Year must be a number between 1700 and 2100")
+        start_year = int(start_year_selector.get())
+        end_year = int(end_year_selector.get())
+        if start_year < 1700 or start_year > 2100:
+            logging.error("%s is not a valid start year.", start_year)
+            start_year_selector.delete(0, tk.END)
+            raise ValueError("Start year must be a number between 1701 and 2100")
+        elif end_year < 1700 or end_year > 2100:
+            logging.error("%s is not a valid end year.", end_year)
+            end_year_selector.delete(0, tk.END)
+            raise ValueError("End year must be a number between 1701 and 2100")
         else:
-            logging.info("Year: %s", year)
-            summary.config(state='normal')
-            holidays = calculate_dates(year)
-            summary.insert(1.0, generate_holidays(holidays))
-            summary.config(state='disabled')
-            for holiday in holidays:
-                clean_end_date = holiday.end_date.strftime('%m-%d-%Y') if holiday.end_date else ""
-                clean_description = holiday.description if holiday.description else ""
-                clean_schedule = holiday.schedule if holiday.schedule else ""
+            logging.info("Calculating holidays...")
+            logging.info("Start Year: %d, End Year: %d", start_year, end_year)
+            years = [start_year] if end_year == start_year else list(range(start_year, end_year+1))
+            print(years)
+            for year in years:
+                logging.info("Year: %s", year)
+                summary.config(state='normal')
+                holidays = calculate_dates(year)
+                if holidays is None:
+                    logging.error("No holidays calculated for year %d.", year)
+                    summary.insert(1.0,
+                                   f"No holidays calculated for {year}. See log for details.\n")
+                else:
+                    logging.info("Holidays calculated for year %d.", year)
+                    summary.insert(1.0, generate_holidays(holidays))
+                    summary.config(state='disabled')
+                    for holiday in holidays:
+                        clean_end_date = holiday.end_date.strftime('%m-%d-%Y') if holiday.end_date else ""
+                        clean_description = holiday.description if holiday.description else ""
+                        clean_schedule = holiday.schedule if holiday.schedule else ""
 
-                table.insert("",
-                             tk.END,
-                             text=holiday.name,
-                             values=(holiday.name,
-                                     holiday.start_date.strftime('%m-%d-%Y'),
-                                     clean_end_date,
-                                     clean_description,
-                                     clean_schedule))
-                event_details = (
-                    f"{holiday.name}\n"
-                    f"Description: {holiday.description}\n"
-                    f"Schedule: {holiday.schedule}"
-                )
-                calendar_widget.calevent_create(holiday.start_date, event_details, 'holiday')
+                        table.insert("",
+                                    tk.END,
+                                    text=holiday.name,
+                                    values=(holiday.name,
+                                            holiday.start_date.strftime('%m-%d-%Y'),
+                                            clean_end_date,
+                                            clean_description,
+                                            clean_schedule))
+                        event_details = (
+                            f"{holiday.name}\n"
+                            f"Description: {holiday.description}\n"
+                            f"Schedule: {holiday.schedule}"
+                        )
+                        calendar_widget.calevent_create(holiday.start_date, event_details,
+                                                        'holiday')
             calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
             calendar_widget.config(state='normal',
-                                   mindate=datetime.date((year-1), 12, 31),
-                                   maxdate=datetime.date((year+1), 1, 1))
-            calendar_widget.selection_set(datetime.date(year,
+                                   mindate=datetime.date((start_year-1), 12, 31),
+                                   maxdate=datetime.date((end_year+1), 1, 1))
+            calendar_widget.selection_set(datetime.date(current_year,
                                                         datetime.date.today().month,
                                                         datetime.date.today().day))
             generate_ics_button.config(state='normal')
             generate_printable_button.config(state='normal')
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must be between 1700 and 2100.")
-        year_combobox.delete(0, tk.END)
+        start_year_selector.delete(0, tk.END)
     return "break"
 
 def clear(summary: tk.Text,
           table: ttk.Treeview,
-          year_combobox: tk.Entry,
+          start_year_selector: tk.Entry,
+          end_year_selector: tk.Entry,
           generate_ics_button: tk.Button,
           generate_printable_button: tk.Button,
           calendar_widget: tkcalendar.Calendar):
@@ -238,7 +260,8 @@ def clear(summary: tk.Text,
     summary.delete(1.0, tk.END)
     summary.config(state='disabled')
     table.delete(*table.get_children())
-    year_combobox.delete(0, tk.END)
+    start_year_selector.set(str(datetime.datetime.now().year))
+    end_year_selector.set(str(datetime.datetime.now().year))
     generate_ics_button.config(state='disabled')
     generate_printable_button.config(state='disabled')
     calendar_widget.calevent_remove('all')
@@ -275,6 +298,15 @@ def show_calendar_event_details(calendar_widget: tkcalendar.Calendar):
         messagebox.showinfo("Event Details",
                             f"Event: {event_text}\nDate: {selected_date.strftime('%m-%d-%Y')}")
 
+def combo_box_selected(start_year_selector: tk.Entry, end_year_selector: tk.Entry):
+    """ Handle Combo Box Selection Event. """
+    start_year = start_year_selector.get()
+    end_year = end_year_selector.get()
+    if start_year > end_year:
+        end_year_selector.set(start_year)
+    if end_year < start_year:
+        end_year_selector.set(start_year)
+
 def setup_gui():
     """ Setup the GUI components. """
     window = tk.Tk()
@@ -283,30 +315,47 @@ def setup_gui():
     header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
     header.pack()
 
-    instructions = tk.Label(text="Select a year between 1700 and 2100:")
-    instructions.pack()
-
+    year_frame1 = ttk.Frame(window)
     current_year = datetime.datetime.now().year
-    years = [str(year) for year in range(1700, 2101)]
-    year_combobox = ttk.Combobox(window, values=years)
-    year_combobox.set(str(current_year))
-    year_combobox.pack(pady=10)
+    start_label = tk.Label(year_frame1, text="Start Year:")
+    start_label.pack(side=tk.LEFT)
+    years = [str(year) for year in range(1701, 2101)]
+    start_year_selector = ttk.Combobox(year_frame1, values=years)
+    ToolTip(start_year_selector, "Select the start year (1701-2100)")
+    start_year_selector.set(str(current_year))
+    start_year_selector.pack(pady=10, side=tk.RIGHT)
+    year_frame1.pack()
+    year_frame2 = ttk.Frame(window)
+    end_label = tk.Label(year_frame2, text="End Year:")
+    end_label.pack(side=tk.LEFT)
+    end_year_selector = ttk.Combobox(year_frame2, values=years)
+    ToolTip(end_year_selector, "Select the end year (1701-2100)")
+    end_year_selector.set(str(current_year))
+    end_year_selector.pack(pady=10, side=tk.RIGHT)
+    year_frame2.pack()
+
+    start_year_selector.bind("<<ComboboxSelected>>",
+                             lambda e: combo_box_selected(start_year_selector,
+                                                          end_year_selector))
+    end_year_selector.bind("<<ComboboxSelected>>",
+                            lambda e: combo_box_selected(start_year_selector,
+                                                          end_year_selector))
 
     top_buttons = ttk.Frame(window)
 
     # helper functions to keep lambda lines short
     def do_submit(event=None):
-        return submit(year_combobox, summary, table,
+        return submit(current_year,start_year_selector, end_year_selector, summary, table,
                       generate_ics_button, generate_printable_button,
                       calendar_widget, event)
 
     def do_clear():
-        return clear(summary, table, year_combobox,
+        return clear(summary, table, start_year_selector, end_year_selector,
                      generate_ics_button, generate_printable_button,
                      calendar_widget)
 
     submit_button = tk.Button(top_buttons, text="Submit", command=do_submit)
-    ToolTip(submit_button, "Submit the selected year.")
+    ToolTip(submit_button, "Submit the selected year range.")
     submit_button.bind("<Button-1>", do_submit)
 
     clear_button = tk.Button(top_buttons, text="Clear", command=do_clear)
@@ -368,11 +417,11 @@ def setup_gui():
 
     bottom_buttons = ttk.Frame(window)
     generate_ics_button = tk.Button(bottom_buttons, text="Generate ICS",
-                                command=lambda: generate_ics(year_combobox))
+                                command=lambda: generate_ics(start_year_selector))
     ToolTip(generate_ics_button, "Generate an ICS file for calendar import.")
     generate_ics_button.config(state='disabled')
     generate_printable_button = tk.Button(bottom_buttons, text="Generate Printable Summary",
-                                command=lambda: generate_printable_summary(year_combobox))
+                                command=lambda: generate_printable_summary(start_year_selector))
     ToolTip(generate_printable_button, "Generate a printable summary of the holidays.")
     generate_printable_button.config(state='disabled')
     bottom_buttons.pack()

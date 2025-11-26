@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [v1.8.0]
+
+### Added
+
+- Better Error Handling for Year Selection
+- Better Logging
+
+### Changed
+
+- Replace single year selection with start and end year selection
+
+### Removed
+
+- None
+
 ## [v1.7.1]
 
 ### Added
