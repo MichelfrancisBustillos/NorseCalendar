@@ -2,9 +2,7 @@
 import datetime
 import logging
 from dataclasses import dataclass
-import sys
 from typing import List, Optional
-from tkinter import messagebox
 import urllib3
 import certifi
 
@@ -50,31 +48,19 @@ class MoonPhase:
     phase: str
     date: datetime.datetime
 
-def check_api_connection() -> bool:
-    """ Check API Connection. """
-    try:
-        http.request("GET", "https://aa.usno.navy.mil/api/")
-        logging.info("API Connection Successful")
-        return True
-    except urllib3.exceptions.MaxRetryError:
-        err_msg = ("Could not connect to the API. "
-                   "Please check your internet connection.")
-        messagebox.showerror("API Connection Error", err_msg)
-        logging.error("API Connection Error")
-        sys.exit(1)
+def get_core_dates(year: int) -> dict:
+    """ Get Core Dates from API. """
+    phenom_api = f"https://aa.usno.navy.mil/api/seasons?year={year}&tz=-6&dst=true"
+    phenoms = http.request("GET", phenom_api)
+    phenoms_json = phenoms.json()
+    return phenoms_json
 
 def calculate_dates(year: int) -> List[Holiday]:
     """ Calculate Holiday dates and return array of class Holiday. """
     holidays = [None] * 26  # Preallocate list for 26 holidays
 
-    # Get Core Dates
-    phenom_api = f"https://aa.usno.navy.mil/api/seasons?year={year}&tz=-6&dst=true"
-    phenoms = http.request("GET", phenom_api)
-    phenoms_json = phenoms.json()
-
-    phenom_api_prev = f"https://aa.usno.navy.mil/api/seasons?year={year-1}&tz=-6&dst=true"
-    phenoms_prev = http.request("GET", phenom_api_prev)
-    phenoms_prev_json = phenoms_prev.json()
+    phenoms_json = get_core_dates(year)
+    phenoms_prev_json = get_core_dates(year - 1)
 
     # Create Holiday objects for equinoxes and solstices
     holidays[0] = Holiday(

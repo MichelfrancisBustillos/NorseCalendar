@@ -2,6 +2,7 @@
 import datetime
 import logging
 import webbrowser
+import sys
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 from typing import List
@@ -9,7 +10,7 @@ import tkcalendar
 import urllib3
 import certifi
 from ics import Calendar, Event
-from calculate_dates import calculate_dates, Holiday, check_api_connection
+from calculate_dates import calculate_dates, Holiday
 
 # Initialize HTTP Pool Manager
 http = urllib3.PoolManager(
@@ -111,6 +112,19 @@ class ToolTip:
         if self.tip_window:
             self.tip_window.destroy()
         self.tip_window = None
+
+def check_api_connection() -> bool:
+    """ Check API Connection. """
+    try:
+        http.request("GET", "https://aa.usno.navy.mil/api/")
+        logging.info("API Connection Successful")
+        return True
+    except urllib3.exceptions.MaxRetryError:
+        err_msg = ("Could not connect to the API. "
+                   "Please check your internet connection.")
+        messagebox.showerror("API Connection Error", err_msg)
+        logging.error("API Connection Error")
+        sys.exit(1)
 
 def generate_holidays(holidays: List[Holiday]) -> str:
     """ Generate Holiday summary string. """

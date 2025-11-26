@@ -6,3 +6,4 @@ testing.py
 *.log
 *.pyc
 __pycache__/
+*.db
