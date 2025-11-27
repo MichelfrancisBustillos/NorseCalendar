@@ -14,6 +14,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [v2.0.0]
+
+### Added
+
+- Beta Version Warning Dialog
+- SQLite3 dependancy for Holiday Storage
+
+### Changed
+
+- Migrated to SQLite Database for Holiday Storage
+- Changed "Generate Printable Summary" to "Export Summary" for clarity
+- Updated Version Checking to compare versions correctly
+- Updated date generation logic to use database, reducing API calls
+- Updated logging messages for clarity
+
+### Removed
+
+- None
+
 ## [v1.8.0]
 
 ### Added

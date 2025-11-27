@@ -251,11 +251,9 @@ def submit(current_year: int,
         end_year = int(end_year_selector.get())
         if start_year < 1700 or start_year > 2100:
             logging.error("%s is not a valid start year.", start_year)
-            start_year_selector.delete(0, tk.END)
             raise ValueError("Start year must be a number between 1701 and 2100")
         elif end_year < 1700 or end_year > 2100:
             logging.error("%s is not a valid end year.", end_year)
-            end_year_selector.delete(0, tk.END)
             raise ValueError("End year must be a number between 1701 and 2100")
         else:
             logging.info("Calculating holidays...")
@@ -263,7 +261,7 @@ def submit(current_year: int,
             years = [start_year] if end_year == start_year else list(range(start_year, end_year+1))
 
             for year in years:
-                logging.info("Year: %s", year)
+                logging.info("Requesting Year: %s", year)
                 summary.config(state='normal')
                 holidays = get_holidays(year)
                 if holidays is None:
@@ -291,7 +289,8 @@ def submit(current_year: int,
                             f"Description: {holiday.description}\n"
                             f"Schedule: {holiday.schedule}"
                         )
-                        calendar_widget.calevent_create(datetime.datetime.strptime(holiday.start_date, '%Y-%m-%d'), event_details,
+                        calendar_widget.calevent_create(datetime.datetime.strptime(holiday.start_date, '%Y-%m-%d'),
+                                                        event_details,
                                                         'holiday')
             calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
             calendar_widget.config(state='normal',
@@ -305,6 +304,7 @@ def submit(current_year: int,
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must be between 1700 and 2100.")
         start_year_selector.delete(0, tk.END)
+        end_year_selector.delete(0, tk.END)
     return "break"
 
 def clear(summary: tk.Text,
@@ -331,6 +331,7 @@ def clear(summary: tk.Text,
 def treeview_sort_column(tv, col, reverse):
     """ Sort Treeview Column. """
     l = [(tv.set(k, col), k) for k in tv.get_children('')]
+    logging.info("Sorting column: %s, Reverse: %s", col, reverse)
     if col in ["Start", "End"]:
         l.sort(key=lambda t:
             datetime.datetime.strptime(t[0],
@@ -350,10 +351,9 @@ def treeview_sort_column(tv, col, reverse):
 def show_calendar_event_details(calendar_widget: tkcalendar.Calendar):
     """ Show details of selected calendar event. """
     selected_date = calendar_widget.selection_get()
-    logging.info("Selected Date: %s", selected_date.strftime('%m-%d-%Y'))
+    logging.info("Displaying details for date: %s", selected_date.strftime('%m-%d-%Y'))
     event_ids = calendar_widget.get_calevents(selected_date)
     for event_id in event_ids:
-        logging.info("Event ID: %s", event_id)
         event_text = calendar_widget.calevent_cget(event_id, option="text")
         messagebox.showinfo("Event Details",
                             f"Event: {event_text}\nDate: {selected_date.strftime('%m-%d-%Y')}")
@@ -369,6 +369,7 @@ def combo_box_selected(start_year_selector: tk.Entry, end_year_selector: tk.Entr
 
 def setup_gui():
     """ Setup the GUI components. """
+    logging.info("Setting up GUI")
     window = tk.Tk()
     window.title("Norse Calendar Calculator")
 
@@ -477,7 +478,8 @@ def setup_gui():
 
     bottom_buttons = ttk.Frame(window)
     generate_ics_button = tk.Button(bottom_buttons, text="Generate ICS",
-                                command=lambda: generate_ics(start_year_selector, end_year_selector))
+                                command=lambda: generate_ics(start_year_selector,
+                                                             end_year_selector))
     ToolTip(generate_ics_button, "Generate an ICS file for calendar import.")
     generate_ics_button.config(state='disabled')
     generate_printable_button = tk.Button(bottom_buttons, text="Export Summary",

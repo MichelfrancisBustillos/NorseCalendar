@@ -417,4 +417,4 @@ def write_holidays(year: int) -> None:
     ''', (year,))
     conn.commit()
     conn.close()
-    logging.info("Holidays for year %d generated.", year)
+    logging.info("Holidays for year %d written to DB.", year)
