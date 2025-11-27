@@ -11,7 +11,7 @@ import tkcalendar
 import urllib3
 import certifi
 from ics import Calendar, Event
-from calculate_dates import Holiday, write_holidays, get_holidays
+from calculate_dates import Holiday, get_holidays
 
 # Initialize HTTP Pool Manager
 http = urllib3.PoolManager(
@@ -53,8 +53,9 @@ def update_check():
         )
         response = http.request("GET", url)
         latest_version = response.json()["name"]
-        current_version = "v1.8.0"  # Current version of the application
-        if latest_version != current_version:
+        latest_version = latest_version.replace("v", "")
+        current_version = "2.0.0"  # Current version of the application
+        if latest_version > current_version:
             update_dialog = tk.Tk()
             update_dialog.title("Norse Calendar Calculator")
 
@@ -77,7 +78,34 @@ def update_check():
             ok_button.pack()
 
             update_dialog.mainloop()
-            logging.info("Update available: %s", latest_version)
+            logging.warning("Update available: %s", latest_version)
+        elif latest_version < current_version:
+            update_dialog = tk.Tk()
+            update_dialog.title("Norse Calendar Calculator")
+
+            header = tk.Label(update_dialog, text="Norse Calendar Calculator",
+                              font=("Arial", 25))
+            header.pack()
+            warning_label = tk.Label(update_dialog,
+                                     text="You are using a beta version!",
+                                     fg="red")
+            warning_label.pack()
+            link_text = "Click here to download the latest stable version."
+            link = tk.Label(update_dialog, text=link_text,
+                            fg="blue", cursor="hand2")
+            link.pack()
+            link.bind("<Button-1>", lambda e: download_latest_release())
+
+            info_text = (f"Current version: {current_version}\n"
+                         f"Latest version: {latest_version}")
+            info = tk.Label(update_dialog, text=info_text)
+            info.pack()
+
+            ok_button = tk.Button(update_dialog, text="OK", command=update_dialog.destroy)
+            ok_button.pack()
+
+            update_dialog.mainloop()
+            logging.warning("Beta Version In Use! %s", current_version)
         else:
             logging.info("No updates available.")
     except urllib3.exceptions.MaxRetryError as update_error:
