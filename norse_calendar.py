@@ -166,9 +166,9 @@ def generate_holidays(holidays: List[Holiday]) -> str:
         value += str(holiday)
     return value
 
-def generate_printable_summary(summary: tk.Text,):
-    """ Generate Printable Summary File """
-    logging.info("Generating Printable Summary File")
+def export_summary(summary: tk.Text,):
+    """ Export Summary File """
+    logging.info("Exporting Summary File")
     filename = filedialog.asksaveasfilename(
         title='Save as...',
         filetypes=[('Text files', '*.txt')],
@@ -176,8 +176,8 @@ def generate_printable_summary(summary: tk.Text,):
     )
     with open(filename, 'w', encoding="utf-8") as norse_calendar:
         norse_calendar.write(summary.get(1.0, tk.END))
-        logging.info("Printable Summary File Created")
-    messagebox.showinfo("Summary Created", "Printable Summary File Created")
+        logging.info("Summary File Created")
+    messagebox.showinfo("Summary Created", "Summary Export Created")
 
 def generate_ics(start_year_selector: tk.Entry, end_year_selector: tk.Entry):
     """ Generate ICS file for Calendar Import """
@@ -452,9 +452,9 @@ def setup_gui():
                                 command=lambda: generate_ics(start_year_selector, end_year_selector))
     ToolTip(generate_ics_button, "Generate an ICS file for calendar import.")
     generate_ics_button.config(state='disabled')
-    generate_printable_button = tk.Button(bottom_buttons, text="Generate Printable Summary",
-                                command=lambda: generate_printable_summary(summary))
-    ToolTip(generate_printable_button, "Generate a printable summary of the holidays.")
+    generate_printable_button = tk.Button(bottom_buttons, text="Export Summary",
+                                command=lambda: export_summary(summary))
+    ToolTip(generate_printable_button, "Export a printable summary file.")
     generate_printable_button.config(state='disabled')
     bottom_buttons.pack()
     generate_ics_button.pack(side=tk.LEFT)
