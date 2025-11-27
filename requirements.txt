@@ -5,3 +5,4 @@ tkinter
 ics
 tkcalendar
 webbrowser
+sqlite3

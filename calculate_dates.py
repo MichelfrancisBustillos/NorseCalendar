@@ -1,6 +1,7 @@
 """ Module to calculate Norse Calendar dates. """
 import datetime
 import logging
+import sqlite3
 from dataclasses import dataclass
 from typing import List, Optional
 import urllib3
@@ -32,10 +33,10 @@ class Holiday():
             logging.error("Date Missing!")
             value += "Date: Missing\n"
         elif self.end_date is None:
-            value += f"Date: {self.start_date.strftime('%m-%d-%Y')}\n"
+            value += f"Date: {self.start_date}\n"
         else:
-            value += f"Start Date: {self.start_date.strftime('%m-%d-%Y')}\n"
-            value += f"End Date: {self.end_date.strftime('%m-%d-%Y')}\n"
+            value += f"Start Date: {self.start_date}\n"
+            value += f"End Date: {self.end_date}\n"
         if self.description is not None:
             value += f"Description: {self.description}\n"
         if self.schedule is not None:
@@ -380,3 +381,40 @@ def calculate_dates(year: int) -> List[Holiday]:
     # Sort holidays by start date
     holidays = sorted(holidays, key=lambda holiday: holiday.start_date)
     return holidays
+
+def get_holidays(year: int) -> List[Holiday]:
+    """ Read holidays from DB for a given year. """
+    conn = sqlite3.connect('norse_calendar.db')
+    cursor = conn.cursor()
+    if year not in [row[0] for row in cursor.execute('SELECT year FROM years').fetchall()]:
+        logging.info("Holidays for year %d not found in DB. Generating...", year)
+        write_holidays(year)
+    logging.info("Retrieving holidays for year %d from DB.", year)
+    cursor.execute('SELECT * FROM holidays WHERE start_date LIKE ?', (f'{year}%',))
+    rows = cursor.fetchall()
+    conn.close()
+    return [Holiday(*row[1:]) for row in rows]
+
+def write_holidays(year: int) -> None:
+    """ Generate holidays for a given year and write to DB. """
+    holidays = calculate_dates(year)
+    # Write holidays to database
+    conn = sqlite3.connect('norse_calendar.db')
+    cursor = conn.cursor()
+    for holiday in holidays:
+        cursor.execute('''
+            INSERT INTO holidays (name, start_date, end_date, description, schedule)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (
+            holiday.name,
+            holiday.start_date.strftime('%Y-%m-%d'),
+            holiday.end_date.strftime('%Y-%m-%d') if holiday.end_date else None,
+            holiday.description,
+            holiday.schedule
+        ))
+    cursor.execute('''
+            INSERT INTO years (year) VALUES (?)
+    ''', (year,))
+    conn.commit()
+    conn.close()
+    logging.info("Holidays for year %d generated.", year)

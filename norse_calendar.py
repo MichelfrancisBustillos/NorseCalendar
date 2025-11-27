@@ -3,6 +3,7 @@ import datetime
 import logging
 import webbrowser
 import sys
+import sqlite3
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk
 from typing import List
@@ -10,7 +11,7 @@ import tkcalendar
 import urllib3
 import certifi
 from ics import Calendar, Event
-from calculate_dates import calculate_dates, Holiday
+from calculate_dates import Holiday, write_holidays, get_holidays
 
 # Initialize HTTP Pool Manager
 http = urllib3.PoolManager(
@@ -113,6 +114,37 @@ class ToolTip:
             self.tip_window.destroy()
         self.tip_window = None
 
+def db_setup():
+    """ Set up the SQLite database for storing holidays. """
+    conn = sqlite3.connect('norse_calendar.db')
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS holidays (
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            start_date TEXT,
+            end_date TEXT,
+            description TEXT,
+            schedule TEXT
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS years (
+            id INTEGER PRIMARY KEY,
+            year INTEGER
+        )
+    ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS moon_phases (
+            id INTEGER PRIMARY KEY,
+            phase TEXT,
+            date TEXT
+        )
+    ''')
+    conn.commit()
+    conn.close()
+    logging.info("Database setup complete.")
+
 def check_api_connection() -> bool:
     """ Check API Connection. """
     try:
@@ -134,7 +166,7 @@ def generate_holidays(holidays: List[Holiday]) -> str:
         value += str(holiday)
     return value
 
-def generate_printable_summary(start_year_selector: tk.Entry):
+def generate_printable_summary(summary: tk.Text,):
     """ Generate Printable Summary File """
     logging.info("Generating Printable Summary File")
     filename = filedialog.asksaveasfilename(
@@ -142,14 +174,12 @@ def generate_printable_summary(start_year_selector: tk.Entry):
         filetypes=[('Text files', '*.txt')],
         defaultextension='.txt'
     )
-    year = int(start_year_selector.get())
-    holidays = calculate_dates(year)
     with open(filename, 'w', encoding="utf-8") as norse_calendar:
-        norse_calendar.write(generate_holidays(holidays))
+        norse_calendar.write(summary.get(1.0, tk.END))
         logging.info("Printable Summary File Created")
     messagebox.showinfo("Summary Created", "Printable Summary File Created")
 
-def generate_ics(start_year_selector: tk.Entry):
+def generate_ics(start_year_selector: tk.Entry, end_year_selector: tk.Entry):
     """ Generate ICS file for Calendar Import """
     logging.info("Generating ICS File")
     filename = filedialog.asksaveasfilename(
@@ -157,8 +187,9 @@ def generate_ics(start_year_selector: tk.Entry):
         filetypes=[('Calendar files', '*.ics')],
         defaultextension='.ics'
     )
-    year = int(start_year_selector.get())
-    holidays = calculate_dates(year)
+    holidays = []
+    for year in range(int(start_year_selector.get()), int(end_year_selector.get()) + 1):
+        holidays.extend(get_holidays(year))
     calendar = Calendar()
     for holiday in holidays:
         event = Event()
@@ -204,17 +235,16 @@ def submit(current_year: int,
             for year in years:
                 logging.info("Year: %s", year)
                 summary.config(state='normal')
-                holidays = calculate_dates(year)
+                holidays = get_holidays(year)
                 if holidays is None:
                     logging.error("No holidays calculated for year %d.", year)
                     summary.insert(1.0,
                                    f"No holidays calculated for {year}. See log for details.\n")
                 else:
-                    logging.info("Holidays calculated for year %d.", year)
                     summary.insert(1.0, generate_holidays(holidays))
                     summary.config(state='disabled')
                     for holiday in holidays:
-                        clean_end_date = holiday.end_date.strftime('%m-%d-%Y') if holiday.end_date else ""
+                        clean_end_date = holiday.end_date if holiday.end_date else ""
                         clean_description = holiday.description if holiday.description else ""
                         clean_schedule = holiday.schedule if holiday.schedule else ""
 
@@ -222,7 +252,7 @@ def submit(current_year: int,
                                     tk.END,
                                     text=holiday.name,
                                     values=(holiday.name,
-                                            holiday.start_date.strftime('%m-%d-%Y'),
+                                            holiday.start_date,
                                             clean_end_date,
                                             clean_description,
                                             clean_schedule))
@@ -231,7 +261,7 @@ def submit(current_year: int,
                             f"Description: {holiday.description}\n"
                             f"Schedule: {holiday.schedule}"
                         )
-                        calendar_widget.calevent_create(holiday.start_date, event_details,
+                        calendar_widget.calevent_create(datetime.datetime.strptime(holiday.start_date, '%Y-%m-%d'), event_details,
                                                         'holiday')
             calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
             calendar_widget.config(state='normal',
@@ -417,11 +447,11 @@ def setup_gui():
 
     bottom_buttons = ttk.Frame(window)
     generate_ics_button = tk.Button(bottom_buttons, text="Generate ICS",
-                                command=lambda: generate_ics(start_year_selector))
+                                command=lambda: generate_ics(start_year_selector, end_year_selector))
     ToolTip(generate_ics_button, "Generate an ICS file for calendar import.")
     generate_ics_button.config(state='disabled')
     generate_printable_button = tk.Button(bottom_buttons, text="Generate Printable Summary",
-                                command=lambda: generate_printable_summary(start_year_selector))
+                                command=lambda: generate_printable_summary(summary))
     ToolTip(generate_printable_button, "Generate a printable summary of the holidays.")
     generate_printable_button.config(state='disabled')
     bottom_buttons.pack()
@@ -433,5 +463,6 @@ def setup_gui():
 if __name__ == '__main__':
     update_check()
     check_api_connection()
+    db_setup()
     setup_gui()
     logging.info("Exiting Norse Calendar Calculator")
