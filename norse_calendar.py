@@ -190,16 +190,18 @@ def generate_ics(start_year_selector: tk.Entry, end_year_selector: tk.Entry):
     holidays = []
     for year in range(int(start_year_selector.get()), int(end_year_selector.get()) + 1):
         holidays.extend(get_holidays(year))
+        print("Calculating holidays for year:", year)
     calendar = Calendar()
     for holiday in holidays:
         event = Event()
         event.name = holiday.name
-        event.begin = holiday.start_date
+        event.begin = datetime.datetime.strptime(holiday.start_date, '%Y-%m-%d')
         event.description = f"Description: {holiday.description}\nSchedule: {holiday.schedule}"
         if holiday.end_date is not None:
-            event.end = holiday.end_date
+            event.end = datetime.datetime.strptime(holiday.end_date, '%Y-%m-%d')
         event.make_all_day()
         calendar.events.add(event)
+        print("Added event to calendar:", holiday.name)
     with open(filename, 'w', encoding="utf-8") as norse_calendar:
         norse_calendar.writelines(calendar.serialize_iter())
         logging.info("ICS File Created")
