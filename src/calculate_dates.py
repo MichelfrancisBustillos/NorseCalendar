@@ -1,6 +1,5 @@
 """ Module to calculate Norse Calendar dates. """
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-positional-arguments
+
 import datetime
 import logging
 import sqlite3
@@ -15,19 +14,14 @@ http = urllib3.PoolManager(
     ca_certs=certifi.where()
 )
 
+@dataclass
 class Holiday():
-    """ Class containing definition of 'Holiday' object."""
-    def __init__(self,
-                 name: str,
-                 start_date: datetime.datetime,
-                 end_date: Optional[datetime.datetime]=None,
-                 desc: Optional[str]=None,
-                 schedule: Optional[str]=None):
-        self.name = name
-        self.start_date = start_date
-        self.end_date = end_date
-        self.description = desc
-        self.schedule = schedule
+    """ Class containing definition of 'Holiday' object."""   
+    name: str
+    start_date: datetime.datetime
+    end_date: Optional[datetime.datetime]=None
+    description: Optional[str]=None
+    schedule: Optional[str]=None
 
 @dataclass
 class MoonPhase:

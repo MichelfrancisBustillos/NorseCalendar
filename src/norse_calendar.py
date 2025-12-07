@@ -8,7 +8,7 @@ import tkinter as tk
 from tkinter import messagebox
 import urllib3
 import certifi
-from UI import UI
+from ui import UI
 
 # Initialize HTTP Pool Manager
 http = urllib3.PoolManager(

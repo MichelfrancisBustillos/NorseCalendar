@@ -1,6 +1,7 @@
 """
 NorseCalendar UI
 """
+# pylint: disable=too-many-instance-attributes
 import datetime
 import logging
 import tkinter as tk
@@ -55,36 +56,7 @@ class UI():
         logging.info("Initializing GUI Object")
         # Create GUI Elements
         self.window = window
-        header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
-        header.pack()
-        year_frame1 = ttk.Frame(self.window)
-        self.current_year = datetime.datetime.now().year
-        start_label = tk.Label(year_frame1, text="Start Year:")
-        start_label.pack(side=tk.LEFT)
-        self.max_years = [str(self.year) for self.year in range(1701, 2101)]
-        self.start_year_selector = ttk.Combobox(year_frame1, values=self.max_years)
-        ToolTip(self.start_year_selector, "Select the start year (1701-2100)")
-        self.start_year_selector.set(str(self.current_year))
-        self.start_year_selector.pack(pady=10, side=tk.RIGHT)
-        year_frame1.pack()
-        year_frame2 = ttk.Frame(self.window)
-        end_label = tk.Label(year_frame2, text="End Year:")
-        end_label.pack(side=tk.LEFT)
-        self.end_year_selector = ttk.Combobox(year_frame2, values=self.max_years)
-        ToolTip(self.end_year_selector, "Select the end year (1701-2100)")
-        self.end_year_selector.set(str(self.current_year))
-        self.end_year_selector.pack(pady=10, side=tk.RIGHT)
-        year_frame2.pack()
-        top_buttons = ttk.Frame(self.window)
-        #submit_button = tk.Button(top_buttons,text="Submit")
-        submit_button = tk.Button(top_buttons, text="Submit", command=self.submit)
-        ToolTip(submit_button, "Submit the selected year range.")
-        #clear_button = tk.Button(top_buttons, text="Clear")
-        clear_button = tk.Button(top_buttons, text="Clear", command=self.clear)
-        ToolTip(clear_button, "Clear all fields.")
-        top_buttons.pack()
-        submit_button.pack(side=tk.LEFT)
-        clear_button.pack()
+        self.create_top()
         tab_control = ttk.Notebook(self.window)
         tab1 = ttk.Frame(tab_control)
         tab_control.add(tab1, text='Summary')
@@ -126,6 +98,58 @@ class UI():
         self.calendar_widget.pack(fill="both", expand=True)
         tab_control.pack(expand=1, fill="both")
 
+        self.create_bottom()
+
+        #Bind UI Elements
+        #submit_button.bind("<Button-1>", self.submit())
+        self.start_year_selector.bind("<<ComboboxSelected>>", self.combo_box_selected())
+        self.end_year_selector.bind("<<ComboboxSelected>>", self.combo_box_selected())
+        self.calendar_widget.bind("<<CalendarSelected>>",
+                        lambda event: self.show_calendar_event_details())
+
+    def create_top(self):
+        """
+        Create top section with inputs and buttons
+        
+        :param self: Description
+        """
+        header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
+        header.pack()
+        year_frame1 = ttk.Frame(self.window)
+        self.current_year = datetime.datetime.now().year
+        start_label = tk.Label(year_frame1, text="Start Year:")
+        start_label.pack(side=tk.LEFT)
+        self.max_years = [str(self.year) for self.year in range(1701, 2101)]
+        self.start_year_selector = ttk.Combobox(year_frame1, values=self.max_years)
+        ToolTip(self.start_year_selector, "Select the start year (1701-2100)")
+        self.start_year_selector.set(str(self.current_year))
+        self.start_year_selector.pack(pady=10, side=tk.RIGHT)
+        year_frame1.pack()
+        year_frame2 = ttk.Frame(self.window)
+        end_label = tk.Label(year_frame2, text="End Year:")
+        end_label.pack(side=tk.LEFT)
+        self.end_year_selector = ttk.Combobox(year_frame2, values=self.max_years)
+        ToolTip(self.end_year_selector, "Select the end year (1701-2100)")
+        self.end_year_selector.set(str(self.current_year))
+        self.end_year_selector.pack(pady=10, side=tk.RIGHT)
+        year_frame2.pack()
+        top_buttons = ttk.Frame(self.window)
+        #submit_button = tk.Button(top_buttons,text="Submit")
+        submit_button = tk.Button(top_buttons, text="Submit", command=self.submit)
+        ToolTip(submit_button, "Submit the selected year range.")
+        #clear_button = tk.Button(top_buttons, text="Clear")
+        clear_button = tk.Button(top_buttons, text="Clear", command=self.clear)
+        ToolTip(clear_button, "Clear all fields.")
+        top_buttons.pack()
+        submit_button.pack(side=tk.LEFT)
+        clear_button.pack()
+
+    def create_bottom(self):
+        """
+        Create bottom section and buttons
+        
+        :param self: Description
+        """
         bottom_buttons = ttk.Frame(self.window)
         self.generate_ics_button = tk.Button(bottom_buttons, text="Generate ICS",
                                     command=lambda: generate_ics(self.start_year_selector,
@@ -141,14 +165,7 @@ class UI():
         self.generate_printable_button.pack()
         dev_button = tk.Button(self.window, text="π", command=dev_menu)
         dev_button.pack(side=tk.RIGHT)
-
-        #Bind UI Elements
-        #submit_button.bind("<Button-1>", self.submit())
-        self.start_year_selector.bind("<<ComboboxSelected>>", self.combo_box_selected())
-        self.end_year_selector.bind("<<ComboboxSelected>>", self.combo_box_selected())
-        self.calendar_widget.bind("<<CalendarSelected>>",
-                        lambda event: self.show_calendar_event_details())
-
+    
     def submit(self):
         """
         Handle Submit Button Press or 'Enter'
@@ -167,7 +184,11 @@ class UI():
             logging.info("Start Year: %d, End Year: %d",
                             int(self.start_year_selector.get()),
                             int(self.end_year_selector.get()))
-            years = [int(self.start_year_selector.get())] if int(self.end_year_selector.get()) == int(self.start_year_selector.get()) else list(range(int(self.start_year_selector.get()), int(self.end_year_selector.get())+1))
+            if int(self.end_year_selector.get()) == int(self.start_year_selector.get()):
+                years = [int(self.start_year_selector.get())]
+            else:
+                years = list(range(int(self.start_year_selector.get()),
+                                   int(self.end_year_selector.get())+1))
             for year in years:
                 logging.info("Requesting Year: %s", year)
                 self.summary.config(state='normal')
@@ -198,7 +219,8 @@ class UI():
                             f"Schedule: {holiday.schedule}"
                         )
 
-                        self.calendar_widget.calevent_create(datetime.datetime.strptime(str(holiday.start_date), '%Y-%m-%d'), event_details, 'holiday')
+                        start_date = datetime.datetime.strptime(str(holiday.start_date), '%Y-%m-%d')
+                        self.calendar_widget.calevent_create(start_date, event_details, 'holiday')
             self.calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
             self.calendar_widget.config(state='normal',
                                     mindate=datetime.date((int(self.start_year_selector.get())-1),

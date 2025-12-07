@@ -38,10 +38,13 @@ def export_summary(summary: tk.Text,):
         filetypes=[('Text files', '*.txt')],
         defaultextension='.txt'
     )
-    with open(filename, 'w', encoding="utf-8") as norse_calendar:
-        norse_calendar.write(summary.get(1.0, tk.END))
-        logging.info("Summary File Created")
-    messagebox.showinfo("Summary Created", "Summary Export Created")
+    try:
+        with open(filename, 'w', encoding="utf-8") as norse_calendar:
+            norse_calendar.write(summary.get(1.0, tk.END))
+            logging.info("Summary File Created")
+        messagebox.showinfo("Summary Created", "Summary Export Created")
+    except FileNotFoundError as e:
+        logging.warning(str(e))
 
 def generate_ics(start_year_selector: ttk.Combobox, end_year_selector: ttk.Combobox):
     """ Generate ICS file for Calendar Import """
@@ -65,7 +68,10 @@ def generate_ics(start_year_selector: ttk.Combobox, end_year_selector: ttk.Combo
         event.make_all_day()
         calendar.events.add(event)
         print("Added event to calendar:", holiday.name)
-    with open(filename, 'w', encoding="utf-8") as norse_calendar:
-        norse_calendar.writelines(calendar.serialize_iter())
-        logging.info("ICS File Created")
-    messagebox.showinfo("ICS Created", "ICS File Created")
+    try:
+        with open(filename, 'w', encoding="utf-8") as norse_calendar:
+            norse_calendar.writelines(calendar.serialize_iter())
+            logging.info("ICS File Created")
+        messagebox.showinfo("ICS Created", "ICS File Created")
+    except FileNotFoundError as e:
+        logging.warning(str(e))
