@@ -1,6 +1,10 @@
 
 # Norse Calendar Calculator
 
+[![PyLint](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml/badge.svg)](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml) ![GitHub License](https://img.shields.io/github/license/michelfrancisbustillos/NorseCalendar)
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/michelfran7)
+
 A small application that calculates the dates for the most common Norse Pagan Holidays. Each holiday includes its name (of course!), start date, end date (if is spans multiple days), a description, and a schedule which explains how the dates were found.
 
 ## Getting Started
