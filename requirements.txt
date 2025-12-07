@@ -1,7 +1,7 @@
 datetime
 certifi
 urllib3
-tkinter
+tk
 ics
 tkcalendar
 webbrowser
