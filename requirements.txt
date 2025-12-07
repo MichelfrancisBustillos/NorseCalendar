@@ -4,4 +4,3 @@ urllib3
 tk
 ics
 tkcalendar
-sqlite3
