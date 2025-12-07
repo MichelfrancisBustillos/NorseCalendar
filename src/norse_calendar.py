@@ -37,7 +37,8 @@ def download_latest_release():
     exe = "/norse_calendar.exe"
     download_url = f"{base}{latest_version}{exe}"
     webbrowser.open(download_url)
-    change_log_url = f"https://github.com/michelfrancisbustillos/norsecalendar/releases/tag/{latest_version}"
+    base = "https://github.com/michelfrancisbustillos/norsecalendar/releases/tag/"
+    change_log_url = f"{base}{latest_version}"
     webbrowser.open(change_log_url)
 
 def update_check():
@@ -51,7 +52,7 @@ def update_check():
         response = http.request("GET", url)
         latest_version = response.json()["name"]
         latest_version = latest_version.replace("v", "")
-        current_version = "2.0.0"  # Current version of the application
+        current_version = "2.0.1"  # Current version of the application
         if latest_version > current_version:
             update_dialog = tk.Tk()
             update_dialog.title("Norse Calendar Calculator")

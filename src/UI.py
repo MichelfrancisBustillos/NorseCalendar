@@ -2,6 +2,8 @@
 NorseCalendar UI
 """
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=unused-argument
+# pylint: disable=unused-variable
 import datetime
 import logging
 import tkinter as tk
@@ -165,7 +167,7 @@ class UI():
         self.generate_printable_button.pack()
         dev_button = tk.Button(self.window, text="π", command=dev_menu)
         dev_button.pack(side=tk.RIGHT)
-    
+
     def submit(self):
         """
         Handle Submit Button Press or 'Enter'
@@ -311,7 +313,8 @@ class UI():
             event_ids = self.calendar_widget.get_calevents(selected_date)
             for event_id in event_ids:
                 event_text = self.calendar_widget.calevent_cget(event_id, option="text")
+                date = selected_date.strftime('%m-%d-%Y')
                 messagebox.showinfo("Event Details",
-                                    f"Event: {event_text}\nDate: {selected_date.strftime('%m-%d-%Y')}")
+                                    f"Event: {event_text}\nDate: {date}")
         else:
             logging.info("No date selected, but function called")
