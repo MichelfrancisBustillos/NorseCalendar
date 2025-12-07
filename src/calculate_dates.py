@@ -16,7 +16,8 @@ http = urllib3.PoolManager(
 class Holiday():
     """ Class containing definition of 'Holiday' object."""
     def __init__(self,
-                 name: str, start_date: datetime.datetime,
+                 name: str,
+                 start_date: datetime.datetime,
                  end_date: Optional[datetime.datetime]=None,
                  desc: Optional[str]=None,
                  schedule: Optional[str]=None):
@@ -75,9 +76,9 @@ def get_moon_phases(year: int) -> List[MoonPhase]:
     logging.info("Moon Phases Retrieved for year %d", year)
     return all_moons
 
-def calculate_dates(year: int) -> List[Holiday]:
+def calculate_dates(year: int) -> List[Holiday] | None:
     """ Calculate Holiday dates and return array of class Holiday. """
-    holidays = [None] * 26  # Preallocate list for 26 holidays
+    holidays = [] * 26  # Preallocate list for 26 holidays
     logging.info("Calculating holidays for year %d", year)
     phenoms_json = get_core_dates(year)
     phenoms_prev_json = get_core_dates(year - 1)
@@ -111,29 +112,30 @@ def calculate_dates(year: int) -> List[Holiday]:
     # Get Moon Phases
     all_moons = get_moon_phases(year)
 
-    def next_new_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
+    def next_new_moon(input_date: datetime.datetime) -> datetime.datetime:
         """ Get Next New Moon Date."""
         for moon_counter in all_moons:
             if moon_counter.date > input_date and moon_counter.phase == "New Moon":
                 return moon_counter.date
-        return None
+        return(datetime.datetime(0,0,0))
 
-    def next_full_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
+    def next_full_moon(input_date: datetime.datetime) -> datetime.datetime:
         """ Get Next Full Moon Date."""
         for moon_counter in all_moons:
             if moon_counter.date > input_date and moon_counter.phase == "Full Moon":
                 return moon_counter.date
-        return None
+        return(datetime.datetime(0,0,0))
 
-    def previous_full_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
+    def previous_full_moon(input_date: datetime.datetime) -> datetime.datetime:
         """ Get Previous Full Moon Date."""
         for moon_counter in reversed(all_moons):
             if moon_counter.date < input_date and moon_counter.phase == "Full Moon":
                 return moon_counter.date
-        return None
+        return(datetime.datetime(0,0,0))
 
-    def closest_full_moon(input_date: datetime.datetime) -> Optional[datetime.datetime]:
+    def closest_full_moon(input_date: datetime.datetime) -> datetime.datetime:
         """ Get Closest Full Moon Date. """
+
         days_before = input_date - previous_full_moon(input_date)
         days_after = next_full_moon(input_date) - input_date
         if days_before < days_after:
@@ -401,20 +403,21 @@ def write_holidays(year: int) -> None:
     # Write holidays to database
     conn = sqlite3.connect('norse_calendar.db')
     cursor = conn.cursor()
-    for holiday in holidays:
+    if holidays is not None:
+        for holiday in holidays:
+            cursor.execute('''
+                INSERT INTO holidays (name, start_date, end_date, description, schedule)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (
+                holiday.name,
+                holiday.start_date.strftime('%Y-%m-%d'),
+                holiday.end_date.strftime('%Y-%m-%d') if holiday.end_date else None,
+                holiday.description,
+                holiday.schedule
+            ))
         cursor.execute('''
-            INSERT INTO holidays (name, start_date, end_date, description, schedule)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (
-            holiday.name,
-            holiday.start_date.strftime('%Y-%m-%d'),
-            holiday.end_date.strftime('%Y-%m-%d') if holiday.end_date else None,
-            holiday.description,
-            holiday.schedule
-        ))
-    cursor.execute('''
-            INSERT INTO years (year) VALUES (?)
-    ''', (year,))
-    conn.commit()
-    conn.close()
-    logging.info("Holidays for year %d written to DB.", year)
+                INSERT INTO years (year) VALUES (?)
+        ''', (year,))
+        conn.commit()
+        conn.close()
+        logging.info("Holidays for year %d written to DB.", year)
