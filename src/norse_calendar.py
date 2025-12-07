@@ -354,12 +354,15 @@ def treeview_sort_column(tv, col, reverse):
 def show_calendar_event_details(calendar_widget: tkcalendar.Calendar):
     """ Show details of selected calendar event. """
     selected_date = calendar_widget.selection_get()
-    logging.info("Displaying details for date: %s", selected_date.strftime('%m-%d-%Y'))
-    event_ids = calendar_widget.get_calevents(selected_date)
-    for event_id in event_ids:
-        event_text = calendar_widget.calevent_cget(event_id, option="text")
-        messagebox.showinfo("Event Details",
-                            f"Event: {event_text}\nDate: {selected_date.strftime('%m-%d-%Y')}")
+    if selected_date is not None:
+        logging.info("Displaying details for date: %s", selected_date.strftime('%m-%d-%Y'))
+        event_ids = calendar_widget.get_calevents(selected_date)
+        for event_id in event_ids:
+            event_text = calendar_widget.calevent_cget(event_id, option="text")
+            messagebox.showinfo("Event Details",
+                                f"Event: {event_text}\nDate: {selected_date.strftime('%m-%d-%Y')}")
+    else:
+        logging.info("No date selected, but function called")
 
 def combo_box_selected(start_year_selector: ttk.Combobox, end_year_selector: ttk.Combobox):
     """ Handle Combo Box Selection Event. """
