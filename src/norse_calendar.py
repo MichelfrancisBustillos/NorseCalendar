@@ -29,6 +29,7 @@ logging.basicConfig(filename="debug.log",
                     level=logging.INFO)
 
 logging.info("Starting Norse Calendar Calculator")
+window = tk.Tk()
 
 def download_latest_release():
     """ Open web browser to download latest release. """
@@ -268,59 +269,59 @@ def submit(current_year: int,
         if not 1700 < int(end_year_selector.get()) < 2100:
             logging.error("%s is not a valid end year.", int(end_year_selector.get()))
             raise ValueError("End year must be a number between 1701 and 2100")
-        else:
-            logging.info("Calculating holidays...")
-            logging.info("Start Year: %d, End Year: %d",
-                         int(start_year_selector.get()),
-                         int(end_year_selector.get()))
-            years = [int(start_year_selector.get())] if int(end_year_selector.get()) == int(start_year_selector.get()) else list(range(int(start_year_selector.get()),
-                                                                                                                                       int(end_year_selector.get())+1))
 
-            for year in years:
-                logging.info("Requesting Year: %s", year)
-                summary.config(state='normal')
-                holidays = get_holidays(year)
-                if holidays is None:
-                    logging.error("No holidays calculated for year %d.", year)
-                    summary.insert(1.0,
-                                   f"No holidays calculated for {year}. See log for details.\n")
-                else:
-                    summary.insert(1.0, generate_holidays(holidays))
-                    summary.config(state='disabled')
-                    for holiday in holidays:
-                        clean_end_date = holiday.end_date if holiday.end_date else ""
-                        clean_description = holiday.description if holiday.description else ""
-                        clean_schedule = holiday.schedule if holiday.schedule else ""
+        logging.info("Calculating holidays...")
+        logging.info("Start Year: %d, End Year: %d",
+                        int(start_year_selector.get()),
+                        int(end_year_selector.get()))
+        years = [int(start_year_selector.get())] if int(end_year_selector.get()) == int(start_year_selector.get()) else list(range(int(start_year_selector.get()),
+                                                                                                                                    int(end_year_selector.get())+1))
 
-                        table.insert("",
-                                    tk.END,
-                                    text=holiday.name,
-                                    values=(holiday.name,
-                                            holiday.start_date,
-                                            clean_end_date,
-                                            clean_description,
-                                            clean_schedule))
-                        event_details = (
-                            f"{holiday.name}\n"
-                            f"Description: {holiday.description}\n"
-                            f"Schedule: {holiday.schedule}"
-                        )
+        for year in years:
+            logging.info("Requesting Year: %s", year)
+            summary.config(state='normal')
+            holidays = get_holidays(year)
+            if holidays is None:
+                logging.error("No holidays calculated for year %d.", year)
+                summary.insert(1.0,
+                                f"No holidays calculated for {year}. See log for details.\n")
+            else:
+                summary.insert(1.0, generate_holidays(holidays))
+                summary.config(state='disabled')
+                for holiday in holidays:
+                    clean_end_date = holiday.end_date if holiday.end_date else ""
+                    clean_description = holiday.description if holiday.description else ""
+                    clean_schedule = holiday.schedule if holiday.schedule else ""
 
-                        calendar_widget.calevent_create(datetime.datetime.strptime(str(holiday.start_date),
-                                                                                   '%Y-%m-%d'),
-                                                        event_details,
-                                                        'holiday')
-            calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
-            calendar_widget.config(state='normal',
-                                   mindate=datetime.date((int(start_year_selector.get())-1),
-                                                         12,
-                                                         31),
-                                   maxdate=datetime.date((int(end_year_selector.get())+1), 1, 1))
-            calendar_widget.selection_set(datetime.date(current_year,
-                                                        datetime.date.today().month,
-                                                        datetime.date.today().day))
-            generate_ics_button.config(state='normal')
-            generate_printable_button.config(state='normal')
+                    table.insert("",
+                                tk.END,
+                                text=holiday.name,
+                                values=(holiday.name,
+                                        holiday.start_date,
+                                        clean_end_date,
+                                        clean_description,
+                                        clean_schedule))
+                    event_details = (
+                        f"{holiday.name}\n"
+                        f"Description: {holiday.description}\n"
+                        f"Schedule: {holiday.schedule}"
+                    )
+
+                    calendar_widget.calevent_create(datetime.datetime.strptime(str(holiday.start_date),
+                                                                                '%Y-%m-%d'),
+                                                    event_details,
+                                                    'holiday')
+        calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
+        calendar_widget.config(state='normal',
+                                mindate=datetime.date((int(start_year_selector.get())-1),
+                                                        12,
+                                                        31),
+                                maxdate=datetime.date((int(end_year_selector.get())+1), 1, 1))
+        calendar_widget.selection_set(datetime.date(current_year,
+                                                    datetime.date.today().month,
+                                                    datetime.date.today().day))
+        generate_ics_button.config(state='normal')
+        generate_printable_button.config(state='normal')
     except ValueError:
         messagebox.showerror("Invalid Input", "Year must be between 1700 and 2100.")
         start_year_selector.delete(0, tk.END)
@@ -393,7 +394,6 @@ def combo_box_selected(start_year_selector: ttk.Combobox, end_year_selector: ttk
 def setup_gui():
     """ Setup the GUI components. """
     logging.info("Setting up GUI")
-    window = tk.Tk()
     window.title("Norse Calendar Calculator")
 
     header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
