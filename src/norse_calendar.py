@@ -1,4 +1,5 @@
 """ Import Modules """
+# pylint: disable=W0613,C0301,W0612
 import datetime
 import logging
 import webbrowser
@@ -133,8 +134,7 @@ class ToolTip:
         self.tip_window.wm_geometry(f"+{x}+{y}")
 
         label = tk.Label(self.tip_window, text=self.text, justify='left',
-                         background="#ffffe0", relief='solid', borderwidth=1,
-                         font=("tahoma", "8", "normal"))
+                         background="#ffffe0", relief='solid', borderwidth=1)
         label.pack(ipadx=1)
 
     def hide_tip(self, event=None):
@@ -208,7 +208,7 @@ def export_summary(summary: tk.Text,):
         logging.info("Summary File Created")
     messagebox.showinfo("Summary Created", "Summary Export Created")
 
-def generate_ics(start_year_selector: tk.Entry, end_year_selector: tk.Entry):
+def generate_ics(start_year_selector: ttk.Combobox, end_year_selector: ttk.Combobox):
     """ Generate ICS file for Calendar Import """
     logging.info("Generating ICS File")
     filename = filedialog.asksaveasfilename(
@@ -237,8 +237,8 @@ def generate_ics(start_year_selector: tk.Entry, end_year_selector: tk.Entry):
     messagebox.showinfo("ICS Created", "ICS File Created")
 
 def submit(current_year: int,
-           start_year_selector: tk.Entry,
-           end_year_selector: tk.Entry,
+           start_year_selector: ttk.Combobox,
+           end_year_selector: ttk.Combobox,
            summary: tk.Text,
            table: ttk.Treeview,
            generate_ics_button: tk.Button,
@@ -290,7 +290,9 @@ def submit(current_year: int,
                             f"Description: {holiday.description}\n"
                             f"Schedule: {holiday.schedule}"
                         )
-                        calendar_widget.calevent_create(datetime.datetime.strptime(holiday.start_date, '%Y-%m-%d'),
+
+                        calendar_widget.calevent_create(datetime.datetime.strptime(str(holiday.start_date),
+                                                                                   '%Y-%m-%d'),
                                                         event_details,
                                                         'holiday')
             calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
@@ -310,8 +312,8 @@ def submit(current_year: int,
 
 def clear(summary: tk.Text,
           table: ttk.Treeview,
-          start_year_selector: tk.Entry,
-          end_year_selector: tk.Entry,
+          start_year_selector: ttk.Combobox,
+          end_year_selector: ttk.Combobox,
           generate_ics_button: tk.Button,
           generate_printable_button: tk.Button,
           calendar_widget: tkcalendar.Calendar):
@@ -359,7 +361,7 @@ def show_calendar_event_details(calendar_widget: tkcalendar.Calendar):
         messagebox.showinfo("Event Details",
                             f"Event: {event_text}\nDate: {selected_date.strftime('%m-%d-%Y')}")
 
-def combo_box_selected(start_year_selector: tk.Entry, end_year_selector: tk.Entry):
+def combo_box_selected(start_year_selector: ttk.Combobox, end_year_selector: ttk.Combobox):
     """ Handle Combo Box Selection Event. """
     start_year = start_year_selector.get()
     end_year = end_year_selector.get()
