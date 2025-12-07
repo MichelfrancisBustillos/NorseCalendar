@@ -1,6 +1,5 @@
 """ Import Modules """
-# pylint: disable=too-many-arguments
-# pylint: disable=too-many-positional-arguments
+
 import logging
 import webbrowser
 import sys

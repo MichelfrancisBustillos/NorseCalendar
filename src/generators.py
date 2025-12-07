@@ -54,7 +54,6 @@ def generate_ics(start_year_selector: ttk.Combobox, end_year_selector: ttk.Combo
     holidays = []
     for year in range(int(start_year_selector.get()), int(end_year_selector.get()) + 1):
         holidays.extend(get_holidays(year))
-        print("Calculating holidays for year:", year)
     calendar = Calendar()
     for holiday in holidays:
         event = Event()

@@ -52,6 +52,7 @@ class UI():
         :param window: Description
         :type window: tk.Tk
         """
+        logging.info("Initializing GUI Object")
         # Create GUI Elements
         self.window = window
         header = tk.Label(text="Norse Calendar Calculator", font=("Arial", 25))
@@ -75,9 +76,11 @@ class UI():
         self.end_year_selector.pack(pady=10, side=tk.RIGHT)
         year_frame2.pack()
         top_buttons = ttk.Frame(self.window)
-        submit_button = tk.Button(top_buttons, text="Submit", command=self.submit())
+        #submit_button = tk.Button(top_buttons,text="Submit")
+        submit_button = tk.Button(top_buttons, text="Submit", command=self.submit)
         ToolTip(submit_button, "Submit the selected year range.")
-        clear_button = tk.Button(top_buttons, text="Clear", command=self.clear())
+        #clear_button = tk.Button(top_buttons, text="Clear")
+        clear_button = tk.Button(top_buttons, text="Clear", command=self.clear)
         ToolTip(clear_button, "Clear all fields.")
         top_buttons.pack()
         submit_button.pack(side=tk.LEFT)
@@ -140,7 +143,7 @@ class UI():
         dev_button.pack(side=tk.RIGHT)
 
         #Bind UI Elements
-        submit_button.bind("<Button-1>", self.submit())
+        #submit_button.bind("<Button-1>", self.submit())
         self.start_year_selector.bind("<<ComboboxSelected>>", self.combo_box_selected())
         self.end_year_selector.bind("<<ComboboxSelected>>", self.combo_box_selected())
         self.calendar_widget.bind("<<CalendarSelected>>",
