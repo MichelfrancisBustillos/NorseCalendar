@@ -1,4 +1,6 @@
 """ Module to calculate Norse Calendar dates. """
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
 import datetime
 import logging
 import sqlite3
@@ -26,23 +28,6 @@ class Holiday():
         self.end_date = end_date
         self.description = desc
         self.schedule = schedule
-
-    def __str__(self) -> str:
-        """ Method to export holiday class contents. """
-        value = f"Name: {self.name}\n"
-        if self.start_date is None:
-            logging.error("Date Missing!")
-            value += "Date: Missing\n"
-        elif self.end_date is None:
-            value += f"Date: {self.start_date}\n"
-        else:
-            value += f"Start Date: {self.start_date}\n"
-            value += f"End Date: {self.end_date}\n"
-        if self.description is not None:
-            value += f"Description: {self.description}\n"
-        if self.schedule is not None:
-            value += f"Schedule: {self.schedule}\n"
-        return value
 
 @dataclass
 class MoonPhase:
@@ -117,21 +102,21 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         for moon_counter in all_moons:
             if moon_counter.date > input_date and moon_counter.phase == "New Moon":
                 return moon_counter.date
-        return(datetime.datetime(0,0,0))
+        return datetime.datetime(0,0,0)
 
     def next_full_moon(input_date: datetime.datetime) -> datetime.datetime:
         """ Get Next Full Moon Date."""
         for moon_counter in all_moons:
             if moon_counter.date > input_date and moon_counter.phase == "Full Moon":
                 return moon_counter.date
-        return(datetime.datetime(0,0,0))
+        return datetime.datetime(0,0,0)
 
     def previous_full_moon(input_date: datetime.datetime) -> datetime.datetime:
         """ Get Previous Full Moon Date."""
         for moon_counter in reversed(all_moons):
             if moon_counter.date < input_date and moon_counter.phase == "Full Moon":
                 return moon_counter.date
-        return(datetime.datetime(0,0,0))
+        return datetime.datetime(0,0,0)
 
     def closest_full_moon(input_date: datetime.datetime) -> datetime.datetime:
         """ Get Closest Full Moon Date. """
@@ -140,8 +125,7 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         days_after = next_full_moon(input_date) - input_date
         if days_before < days_after:
             return previous_full_moon(input_date)
-        else:
-            return next_full_moon(input_date)
+        return next_full_moon(input_date)
 
     def previous_thursday(input_date: datetime.datetime) -> datetime.datetime:
         """ Get Previous Thursday Date. """

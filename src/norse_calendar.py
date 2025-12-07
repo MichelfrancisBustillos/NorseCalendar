@@ -1,5 +1,6 @@
 """ Import Modules """
-# pylint: disable=W0613,C0301,W0612
+# pylint: disable=too-many-arguments
+# pylint: disable=too-many-positional-arguments
 import datetime
 import logging
 import webbrowser
@@ -190,10 +191,23 @@ def check_api_connection() -> bool:
 def generate_holidays(holidays: List[Holiday]) -> str:
     """ Generate Holiday summary string. """
     logging.info("Generating Holiday Summary")
-    value = ""
+    summary = ""
     for holiday in holidays:
-        value += str(holiday)
-    return value
+        value = f"Name: {holiday.name}\n"
+        if holiday.start_date is None:
+            logging.error("Date Missing!")
+            value += "Date: Missing\n"
+        elif holiday.end_date is None:
+            value += f"Date: {holiday.start_date}\n"
+        else:
+            value += f"Start Date: {holiday.start_date}\n"
+            value += f"End Date: {holiday.end_date}\n"
+        if holiday.description is not None:
+            value += f"Description: {holiday.description}\n"
+        if holiday.schedule is not None:
+            value += f"Schedule: {holiday.schedule}\n"
+        summary += value
+    return summary
 
 def export_summary(summary: tk.Text,):
     """ Export Summary File """
@@ -248,18 +262,19 @@ def submit(current_year: int,
     """ Handle GUI Click Event. """
     logging.info("Submit Button Clicked")
     try:
-        start_year = int(start_year_selector.get())
-        end_year = int(end_year_selector.get())
-        if start_year < 1700 or start_year > 2100:
-            logging.error("%s is not a valid start year.", start_year)
+        if not 1700 < int(start_year_selector.get()) < 2100:
+            logging.error("%s is not a valid start year.", int(start_year_selector.get()))
             raise ValueError("Start year must be a number between 1701 and 2100")
-        elif end_year < 1700 or end_year > 2100:
-            logging.error("%s is not a valid end year.", end_year)
+        if not 1700 < int(end_year_selector.get()) < 2100:
+            logging.error("%s is not a valid end year.", int(end_year_selector.get()))
             raise ValueError("End year must be a number between 1701 and 2100")
         else:
             logging.info("Calculating holidays...")
-            logging.info("Start Year: %d, End Year: %d", start_year, end_year)
-            years = [start_year] if end_year == start_year else list(range(start_year, end_year+1))
+            logging.info("Start Year: %d, End Year: %d",
+                         int(start_year_selector.get()),
+                         int(end_year_selector.get()))
+            years = [int(start_year_selector.get())] if int(end_year_selector.get()) == int(start_year_selector.get()) else list(range(int(start_year_selector.get()),
+                                                                                                                                       int(end_year_selector.get())+1))
 
             for year in years:
                 logging.info("Requesting Year: %s", year)
@@ -297,8 +312,10 @@ def submit(current_year: int,
                                                         'holiday')
             calendar_widget.tag_config('holiday', background='lightblue', foreground='black')
             calendar_widget.config(state='normal',
-                                   mindate=datetime.date((start_year-1), 12, 31),
-                                   maxdate=datetime.date((end_year+1), 1, 1))
+                                   mindate=datetime.date((int(start_year_selector.get())-1),
+                                                         12,
+                                                         31),
+                                   maxdate=datetime.date((int(end_year_selector.get())+1), 1, 1))
             calendar_widget.selection_set(datetime.date(current_year,
                                                         datetime.date.today().month,
                                                         datetime.date.today().day))
