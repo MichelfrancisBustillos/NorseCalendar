@@ -7,3 +7,5 @@ testing.py
 *.pyc
 __pycache__/
 *.db
+.pytest_cache/
+.venv/

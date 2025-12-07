@@ -12,6 +12,7 @@ import urllib3
 import certifi
 from ics import Calendar, Event
 from calculate_dates import Holiday, get_holidays
+from dev_menu import dev_menu
 
 # Initialize HTTP Pool Manager
 http = urllib3.PoolManager(
@@ -489,7 +490,8 @@ def setup_gui():
     bottom_buttons.pack()
     generate_ics_button.pack(side=tk.LEFT)
     generate_printable_button.pack()
-
+    dev_button = tk.Button(window, text="π", command=dev_menu)
+    dev_button.pack(side=tk.RIGHT)
     window.mainloop()
 
 if __name__ == '__main__':
