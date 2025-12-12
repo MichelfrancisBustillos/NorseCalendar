@@ -57,8 +57,9 @@ def get_moon_phases(year: int) -> List[MoonPhase]:
 
 def calculate_dates(year: int) -> List[Holiday] | None:
     """ Calculate Holiday dates and return array of class Holiday. """
-    holidays = [] * 26  # Preallocate list for 26 holidays
+    holidays = []
     logging.info("Calculating holidays for year %d", year)
+    print(len(holidays))
     phenoms_json = get_core_dates(year)
     phenoms_prev_json = get_core_dates(year - 1)
 
@@ -67,26 +68,26 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         logging.error("Insufficient data from phenom API for year %d.", year)
         return None
 
-    holidays[0] = Holiday(
+    holidays.append(Holiday(
         "Spring Equinox",
         datetime.datetime(phenoms_json['data'][1]['year'],
                           phenoms_json['data'][1]['month'],
-                          phenoms_json['data'][1]['day']))
-    holidays[1] = Holiday(
+                          phenoms_json['data'][1]['day'])))
+    holidays.append(Holiday(
         "Summer Solstice",
         datetime.datetime(phenoms_json['data'][2]['year'],
                           phenoms_json['data'][2]['month'],
-                          phenoms_json['data'][2]['day']))
-    holidays[2] = Holiday(
+                          phenoms_json['data'][2]['day'])))
+    holidays.append(Holiday(
         "Fall Equinox",
         datetime.datetime(phenoms_json['data'][4]['year'],
                           phenoms_json['data'][4]['month'],
-                          phenoms_json['data'][4]['day']))
-    holidays[3] = Holiday(
+                          phenoms_json['data'][4]['day'])))
+    holidays.append(Holiday(
         "Winter Solstice",
         datetime.datetime(phenoms_json['data'][5]['year'],
                           phenoms_json['data'][5]['month'],
-                          phenoms_json['data'][5]['day']))
+                          phenoms_json['data'][5]['day'])))
 
     # Get Moon Phases
     all_moons = get_moon_phases(year)
@@ -128,7 +129,7 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         return input_date
 
     # Calculate Holidays
-    holidays[4] = Holiday(
+    holidays.append(Holiday(
         "Yule",
         holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Winter Solstice')
@@ -138,8 +139,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         ].start_date + datetime.timedelta(days=12),
         "12 day celebration, each day celebrating a different God/Goddess/community/kin",
         "Start: Winter Solstice, End: 12 days after the Winter Solstice."
-    )
-    holidays[5] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Thorrablot",
         next_full_moon(next_new_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Winter Solstice')
@@ -147,8 +148,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         None,
         "The full moon after the new moon following the Winter Solstice."
-    )
-    holidays[6] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Disting",
         next_full_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Thorrablot')
@@ -156,8 +157,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "Welcoming Old man winter and Thor into the home to allow them to warm up after a cold winter",
         "The full moon after the Thorrablot."
-    )
-    holidays[7] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Mid-Winter",
         holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Thorrablot')
@@ -167,8 +168,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         ].start_date),
         "marking the year's longest night and the symbolic rebirth of the sun",
         "Start: Thorrablot, End: Next New Moon"
-    )
-    holidays[8] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Lenzen",
         previous_full_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
@@ -178,8 +179,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         ].start_date),
         "Comes in a perilous time in spring when food supplies that were stored for the winter were running low and new sources were not available yet, fasting during this time is used to honor those who suffered with hunger and famine",
         "Start: Full moon before the Spring Equinox, End: Full moon after the Spring Equinox"
-    )
-    holidays[9] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Offering to Freya",
         holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
@@ -187,8 +188,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "celebrating her gift of fertility over the land and her hand at making spring come",
         "The Spring Equinox"
-    )
-    holidays[10] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Ostara",
         next_full_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Spring Equinox')
@@ -196,8 +197,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "a celebration of spring, that we made it through the winter. Celebrating Idunn, freya, Ostara",
         "The full moon after the Spring Equinox."
-    )
-    holidays[11] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Sigrblot",
         next_new_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Ostara')
@@ -205,8 +206,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "presumably marks the start of campaigning season where weather was getting warmer, Offering sacrifices for victories in battle",
         "The new moon after Ostara."
-    )
-    holidays[12] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Summer Nights Holy Tide",
         holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Ostara')
@@ -216,8 +217,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         ].start_date,
         "the spring festival that marked the beginning of the Norse year's summer half",
         "Start: Ostara, End: Sigrblot"
-    )
-    holidays[13] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Mid-Summer",
         holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Summer Solstice')
@@ -225,8 +226,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "marks the peak power of the sun goddess Sol (Sunna), celebrating the shortest night of the year",
         "The Summer Solstice"
-    )
-    holidays[14] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Lammas",
         closest_full_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Fall Equinox')
@@ -234,8 +235,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "This festival marks the start of the Harvest season ( Gratitude for hard work leading to abundance )",
         "The full moon closest to the Fall Equinox."
-    )
-    holidays[15] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Hausblot",
         next_new_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Lammas')
@@ -243,8 +244,8 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "Celebration of giving thanks for the bountiful harvest and time to prepare for the coming winter",
         "The new moon after Lammas."
-    )
-    holidays[16] = Holiday(
+    ))
+    holidays.append(Holiday(
         "Harvest Home Holy Tide",
         holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Lammas')
@@ -254,8 +255,9 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         ].start_date,
         "marks the end of the summer season, serving as the major harvest and community celebration",
         "Start: Lammas, End: Hausblot"
-    )
-    holidays[17] = Holiday(
+    ))
+
+    holidays.append(Holiday(
         "Alfablot",
         next_full_moon(next_full_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Fall Equinox')
@@ -263,8 +265,9 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "Remembering the fallen male ancestors and offerings to honor the protective spirits of the land",
         "The two full moons after the Fall Equinox."
-    )
-    holidays[18] = Holiday(
+    ))
+
+    holidays.append(Holiday(
         "Disablot",
         next_new_moon(holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Alfablot')
@@ -272,8 +275,9 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "Remembering the fallen Female ancestors and offering to honor the family protective spirits",
         "The new moon after the Alfablot."
-    )
-    holidays[19] = Holiday(
+    ))
+
+    holidays.append(Holiday(
         "Winters Nights Holy Tide",
         holidays[
             next(i for i, x in enumerate(holidays) if x.name == 'Alfablot')
@@ -283,58 +287,58 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         ].start_date,
         "Starts a series of sacrifices celebrating love for friends and family and loss who those have fallen, memory for celebrating their life",
         "Start: Alfablot, End: Disablot"
-    )
+    ))
 
-    holidays[20] = Holiday(
+    holidays.append(Holiday(
         "Welcome Goi and Freya",
         #feb 1st
         datetime.datetime(year, 2, 1),
         None,
-        None,
+        "Welcoming Goi and Freya into the home to warm up and thanking for the spring time to come",
         "February 1st"
-    )
+    ))
 
-    holidays[21] = Holiday(
+    holidays.append(Holiday(
         "Loki Day",
         #April 1st
         datetime.datetime(year, 4, 1),
         None,
         "Welcoming Goi and Freya into the home to warm up and thanking for the spring time to come",
         "April 1st"
-    )
+    ))
 
-    holidays[22] = Holiday(
+    holidays.append(Holiday(
         "Lokabrenna",
         #July 13th
         datetime.datetime(year, 7, 13),
         None,
         "to honor Loki’s transformative fire, often involving rituals to 'burn away' stagnant energy or personal obstacles",
         "July 13th"
-    )
+    ))
 
-    holidays[23] = Holiday(
+    holidays.append(Holiday(
         "Walpurgisnacht",
         #April 30th
         datetime.datetime(year, 4, 30),
         None,
         "Marks the official end of winter and the beginning of spring",
         "April 30th"
-    )
+    ))
 
-    holidays[24] = Holiday(
+    holidays.append(Holiday(
         "Mayday",
         #May 1st
         datetime.datetime(year, 5, 1),
         None,
         "celebrating the hope for triumph of our values courageousness solidarity and generosity over selfishness and greed",
         "May 1st"
-    )
+    ))
 
     previous_winter_solstice = datetime.datetime(phenoms_prev_json['data'][5]['year'],
                           phenoms_prev_json['data'][5]['month'],
                           phenoms_prev_json['data'][5]['day'])
 
-    holidays[25] = Holiday(
+    holidays.append(Holiday(
         "Charming of the Plough",
         #Halfway between Winter Solstice and Spring Equinox
         (previous_winter_solstice + (((holidays[
@@ -343,7 +347,7 @@ def calculate_dates(year: int) -> List[Holiday] | None:
         None,
         "the preparation for the start of the planting season. (preparing the soil for planting) ",
         "Halfway between previous Winter Solstice and Spring Equinox"
-    )
+    ))
 
     # Add Sunwait holidays
     for each in range(6):
