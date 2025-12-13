@@ -14,6 +14,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [v2.1.0]
+
+### Added
+
+- Easter Egg Poem
+- Holiday Descriptions
+
+### Changed
+
+- None
+
+### Removed
+
+- None
+
 ## [v2.0.1]
 
 ### Added
