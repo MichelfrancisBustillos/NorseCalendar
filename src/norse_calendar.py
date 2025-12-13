@@ -52,7 +52,7 @@ def update_check():
         response = http.request("GET", url)
         latest_version = response.json()["name"]
         latest_version = latest_version.replace("v", "")
-        current_version = "2.0.1"  # Current version of the application
+        current_version = "2.1.0"  # Current version of the application
         if latest_version > current_version:
             update_dialog = tk.Tk()
             update_dialog.title("Norse Calendar Calculator")
