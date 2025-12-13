@@ -1,7 +1,7 @@
 
 # Norse Calendar Calculator
 
-![GitHub Release](https://img.shields.io/github/v/release/michelfrancisbustillos/norsecalendar?link=https%3A%2F%2Fgithub.com%2FMichelfrancisBustillos%2FNorseCalendar%2Freleases%2Flatest) [![PyLint](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml/badge.svg)](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml) ![GitHub License](https://img.shields.io/github/license/michelfrancisbustillos/NorseCalendar) ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/michelfrancisbustillos/norsecalendar/latest/total?label=Latest%20Version%20Downloads&link=https%3A%2F%2Fgithub.com%2FMichelfrancisBustillos%2FNorseCalendar%2Freleases%2Flatest)
+![GitHub Release](https://img.shields.io/github/v/release/michelfrancisbustillos/norsecalendar?link=https%3A%2F%2Fgithub.com%2FMichelfrancisBustillos%2FNorseCalendar%2Freleases%2Flatest) [![PyLint](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml/badge.svg)](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml) ![GitHub License](https://img.shields.io/github/license/michelfrancisbustillos/norsecalendar?link=https%3A%2F%2Fgithub.com%2FMichelfrancisBustillos%2FNorseCalendar%2Fblob%2Fmain%2FLICENSE) ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/michelfrancisbustillos/norsecalendar/latest/total?label=Latest%20Version%20Downloads&link=https%3A%2F%2Fgithub.com%2FMichelfrancisBustillos%2FNorseCalendar%2Freleases%2Flatest)
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/michelfran7)
 
