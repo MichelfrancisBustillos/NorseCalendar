@@ -1,7 +1,7 @@
 
 # Norse Calendar Calculator
 
-[![PyLint](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml/badge.svg)](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml) ![GitHub License](https://img.shields.io/github/license/michelfrancisbustillos/NorseCalendar) ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/michelfrancisbustillos/NorseCalendar/total)
+[![PyLint](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml/badge.svg)](https://github.com/MichelfrancisBustillos/NorseCalendar/actions/workflows/python_linting.yml) ![GitHub License](https://img.shields.io/github/license/michelfrancisbustillos/NorseCalendar) ![GitHub Downloads (all assets, latest release)](https://img.shields.io/github/downloads/michelfrancisbustillos/norsecalendar/latest/total)
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/michelfran7)
 
